@@ -21,6 +21,7 @@ class Listener:
         self.source_kw_index = -1
         self.kw_messages = False
         self.kw_messages_index = -1
+        # self.recorder = pyscreenrec.ScreenRecorder()
 
     def start_suite(self, name, attrs):
         self.source = attrs['source']
@@ -54,6 +55,8 @@ class Listener:
         self._update_report_file()
 
     def start_test(self, name, attrs):
+        # self.recorder.start_recording("recording.mp4", 10)/
+        
         self.report[self.suite_index]['tests'].append({
             'id': attrs['id'],
             'longname': attrs['longname'],
@@ -71,6 +74,8 @@ class Listener:
         self._update_report_file()
 
     def end_test(self, name, attrs):
+        # self.recorder.stop_recording()
+
         self.report[self.suite_index]['tests'][self.test_index]['endtime'] = attrs['endtime']
         self.report[self.suite_index]['tests'][self.test_index]['elapsedtime'] = attrs['elapsedtime']
         self.report[self.suite_index]['tests'][self.test_index]['status'] = attrs['status']

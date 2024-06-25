@@ -1,16 +1,8 @@
 {
-    "name": "robotframework-xray",
-    "version": "1.0.0",
-    "scripts": {
-      "install_library": "python setup.py install",
-      "freeze": "pip freeze > uninstall.txt",
-      "uninstall_library": "npm run freeze && pip uninstall -r uninstall.txt -y",
-      "clean": "rimraf build dist results src/robotframework_xray.egg-info",
-      "build": "npm run clean && npm run uninstall_library && npm run install_library",
-      "exec1": "pip uninstall robotframework-xray -y && npm run install_library && robot -d results -i Example1 tests",
-      "exec2": "pip uninstall robotframework-xray -y && npm run install_library && robot -d results -i Example2 tests"
-    },
-    "devDependencies": {
-      "rimraf": "^3.0.2"
-    }
+  "name": "robotframework-xray",
+  "version": "1.0.0",
+  "scripts": {
+    "freeze": "pip freeze > uninstall.txt",
+    "build": "npm run freeze && npm run freeze && pip uninstall -r uninstall.txt -y && pip install -r requirements-dev.txt && python setup.py install"
   }
+}
