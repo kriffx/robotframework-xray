@@ -1,13 +1,12 @@
-import os, json, requests
+import os, json, requests, config
 from os.path import join
 from datetime import datetime
-from .config import Config
 
 class Xray:
     def authentication() -> str:
-        XRAY_API = Config.xray_api()
-        XRAY_CLIENT_ID = Config.xray_client_id()
-        XRAY_CLIENT_SECRET = Config.xray_client_secret()
+        XRAY_API = config.Config.xray_api()
+        XRAY_CLIENT_ID = config.Config.xray_client_id()
+        XRAY_CLIENT_SECRET = config.Config.xray_client_secret()
 
         json_data = json.dumps({'client_id': XRAY_CLIENT_ID, 'client_secret': XRAY_CLIENT_SECRET})
         resp = requests.post(f'{XRAY_API}/authenticate', data=json_data, headers={'Content-Type':'application/json'})
@@ -15,11 +14,10 @@ class Xray:
         if resp.status_code == 200:
             return f'Bearer {resp.json()}'
         else:
-            print('Authentication error, trying again...')
-            Xray.authentication()
+            print('Authentication error')
 
     def updateXrayTest(issueId: str, unstructured: str):
-        XRAY_API = Config.xray_api()
+        XRAY_API = config.Config.xray_api()
 
         auth_token = Xray.authentication()
         unstructured = unstructured.encode('unicode_escape').decode()
@@ -53,7 +51,7 @@ class Xray:
             Xray.updateXrayTest(issueId, unstructured)
 
     def updateXrayTestType(issueId: str):
-        XRAY_API = Config.xray_api()
+        XRAY_API = config.Config.xray_api()
 
         auth_token = Xray.authentication()
         
@@ -85,9 +83,7 @@ class Xray:
             Xray.updateXrayTestType(issueId)
     
     def addEvidenceToTestRun(id: int, filename: str, data: str):
-        XRAY_API = Config.xray_api()
-
-        auth_token = Xray.authentication()
+        XRAY_API = config.Config.xray_api()
 
         json_data = f'''
             mutation {{
@@ -96,7 +92,7 @@ class Xray:
                     evidence: [
                         {{
                             filename: "{ filename }"
-                            mimeType: "video/webm"
+                            mimeType: "video/mp4"
                             data: "{ data }"
                         }}
                     ]
@@ -114,18 +110,17 @@ class Xray:
             },
             headers={
                 'Content-Type': 'application/json',
-                'Authorization': auth_token
+                'Authorization': Xray.authentication()
             },
         )
 
+        print(resp)
+
         if resp.status_code != 200:
-            print('Error sending evidence, trying again...')
-            Xray.addEvidenceToTestRun(id, filename, data)
+            print('Error sending evidence')
 
     def getTest(testKey: str):
-        XRAY_API = Config.xray_api()
-
-        auth_token = Xray.authentication()
+        XRAY_API = config.Config.xray_api()
 
         json_data = f'''
             {{
@@ -147,20 +142,19 @@ class Xray:
             },
             headers={
                 'Content-Type': 'application/json',
-                'Authorization': auth_token
+                'Authorization': Xray.authentication()
             },
         )
+
+        print(resp)
 
         if resp.status_code == 200:
             return resp.json().get('data').get('getTests').get('results')[0].get('issueId')
         else:
-            print('Error getting test ID, trying again...')
-            Xray.getTest(testKey)
+            print('Error getting test ID')
     
     def getTestRun(testIssueId: str, testExecutionIssueId: str):
-        XRAY_API = Config.xray_api()
-
-        auth_token = Xray.authentication()
+        XRAY_API = config.Config.xray_api()
 
         json_data = f'''
             {{
@@ -180,21 +174,20 @@ class Xray:
             },
             headers={
                 'Content-Type': 'application/json',
-                'Authorization': auth_token
+                'Authorization': Xray.authentication()
             },
         )
+
+        print(resp)
 
         if resp.status_code == 200:
             return resp.json().get('data').get('getTestRun').get('id')
         else:
-            print('Error getting run ID, retrying...')
-            Xray.getTestRun(testIssueId, testExecutionIssueId)
+            print('Error getting run ID')
     
     def createTestExecution():
-        PROJECT_KEY = Config.project_key()
-        XRAY_API = Config.xray_api()
-
-        auth_token = Xray.authentication()
+        PROJECT_KEY = config.Config.project_key()
+        XRAY_API = config.Config.xray_api()
         test_execution_date = datetime.today().strftime('%Y-%m-%d %H:%M:%S')
 
         json_data = f'''
@@ -226,9 +219,11 @@ class Xray:
             },
             headers={
                 'Content-Type': 'application/json',
-                'Authorization': auth_token
+                'Authorization': Xray.authentication()
             },
         )
+
+        print(resp)
 
         result = json.dumps({
             'issueId': resp.json().get('data').get('createTestExecution').get('testExecution').get('issueId'),
@@ -238,25 +233,22 @@ class Xray:
         if resp.status_code == 200:
             return json.loads(result)
         else:
-            print('Error create test execution, trying again...')
-            Xray.createTestExecution()
+            print('Error create test execution')
     
     def importExecutionRobot():
-        PROJECT_KEY = Config.project_key()
-        XRAY_API = Config.xray_api()
-
-        auth_token = Xray.authentication()
+        PROJECT_KEY = config.Config.project_key()
+        XRAY_API = config.Config.xray_api()
         testExecKey = Xray.createTestExecution()
 
         report = requests.post(f'{XRAY_API}/import/execution/robot', 
-            data=open(join(os.path.abspath(os.curdir), 'report.xml'), 'rb'),
+            data=open('report.xml', 'rb'),
             params={
                 'projectKey': PROJECT_KEY,
                 'testExecKey': testExecKey['key'],
             },
             headers={
                 'Content-Type': 'application/xml',
-                'Authorization': auth_token
+                'Authorization': Xray.authentication()
             }
         )
 
@@ -268,5 +260,4 @@ class Xray:
         if report.status_code == 200:
             return json.loads(resp)
         else:
-            print('Error import execution, trying again...')
-            Xray.importExecutionRobot()
+            print('Error import execution')

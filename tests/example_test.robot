@@ -1,33 +1,30 @@
 *** Settings ***
-Documentation    Test scenarios for example.
-Library     Xray
-Library     SeleniumLibrary        run_on_failure=Capture Page Screenshot       screenshot_root_directory=EMBED
-Library     ScreenCapLibrary
+Documentation       Test scenarios for Google.
 
-*** Tasks ***
-Click for JS Alert
-    [Documentation]    Click for JS Alert
-    [Tags]      KT-1        Example1
-    Given Vou para The Internet
-    When Abro o alerta
-    Then Valido a mensagem
+Library             SeleniumLibrary    run_on_failure=Capture Page Screenshot    screenshot_root_directory=EMBED
+Library             ../src/Xray/ListenerV2.py
 
-*** Keywords ***
-Vou para The Internet
-    Start Video Recording
+*** Test Cases ***
+Google page test
+    [Documentation]    Google page screenshot
+    [Tags]    KT-1    google
     Open Browser    browser=chrome
     Maximize Browser Window
     Set Selenium Speed    value=0.3
-    Go To    url=https://the-internet.herokuapp.com/javascript_alerts
+    Go To    url=https://www.google.com.br
     Wait Until Element Is Visible    locator=tag:body
-    Title Should Be    title=The Internet
+    Title Should Be    title=Google
     Capture Page Screenshot
-
-Abro o alerta
-    Click Button    locator=xpath://*[@id="content"]/div/ul/li[1]/button
-    Handle Alert    action=ACCEPT
-
-Valido a mensagem
-    Wait Until Element Contains    locator=id:result    text=You successfully clicked an alert
     Close Browser
-    Stop Video Recording
+
+Google page test 2
+    [Documentation]    Google page screenshot
+    [Tags]    kt-2    google2
+    [Setup]    Open Browser    browser=chrome
+    Maximize Browser Window
+    Set Selenium Speed    value=0.3
+    Go To    url=https://www.google.com.br
+    Wait Until Element Is Visible    locator=tag:body
+    Title Should Be    title=Google
+    Capture Page Screenshot
+    [Teardown]    Close Browser

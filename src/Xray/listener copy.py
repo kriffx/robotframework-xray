@@ -177,8 +177,8 @@ class Listener:
             report = e.Element('robot', {
                 'os': platform.system(),
                 'python': platform.python_version(),
-                'rpa': 'true',
-                'schemaversion': '3',
+                'rpa': 'false',
+                'schemaversion': '4',
             })
 
             for suite in self.report:
