@@ -188,7 +188,7 @@ class ListenerV2:
             print('Now if there is evidence we will be sending it, wait a moment...')
             self._send_evidence(self.report, testExecutionId['issueId'])
             print('==============================================================================')
-        elif config.Config.test_type() == "ROBOT":
+        elif config.Config.test_type() == "CUCUMBER":
             report.Report.cucumber(self.report)
         else:
             print('Set the TEST_TYPE in .env!')
