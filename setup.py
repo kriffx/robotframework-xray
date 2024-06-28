@@ -6,7 +6,7 @@ with open(join(dirname(abspath(__file__)), 'requirements.txt'), encoding='utf-8'
 
 setup(
     name = 'robotframework-xray',
-    version = '1.0.0',
+    version = '2.0.0-alpha',
     packages = find_packages('src'),
     package_dir = {'': 'src'},
     install_requires = REQUIREMENTS,

@@ -190,6 +190,9 @@ class ListenerV2:
             print('==============================================================================')
         elif config.Config.test_type() == "CUCUMBER":
             report.Report.cucumber(self.report)
+            print('Report sent successfully')
+            print('------------------------------------------------------------------------------')
+            xray.Xray.importExecutionCucumber()
         else:
             print('Set the TEST_TYPE in .env!')
     

@@ -1,4 +1,5 @@
-import platform, json
+import platform, json, os
+from ntpath import join
 import xml.etree.ElementTree as ET
 
 class Report:
@@ -71,21 +72,57 @@ class Report:
 
     def cucumber(report_json):
         cucumber = []
+        test_index = 0
+        step_index = 0
 
-        for suite in report_json:
+        for report in report_json:
             cucumber.append({
                 "keyword": "Feature",
-                "name": suite.get('longname'),
+                "name": report.get('longname'),
                 "line": 1,
-                "description": suite.get('doc'),
+                "description": report.get('doc'),
                 "tags": [],
-                "id": suite.get('id'),
-                "uri": suite.get('source'),
+                "id": report.get('id'),
+                "uri": report.get('source'),
                 "elements": [],
             })
 
-            for test in suite:
-                cucumber['elements'].append({
-
+            for test in report.get('tests'):
+                cucumber[test_index]['elements'].append({
+                    "keyword": "Scenario",
+                    "name": test.get('originalname'),
+                    "line": test.get('lineno'),
+                    "description": test.get('doc'),
+                    "tags": [],
+                    "id": test.get('id'),
+                    "type": "scenario",
+                    "steps": [],
                 })
-            print(json.dumps(cucumber, indent=4))
+
+                for tag in test.get('tags'):
+                    cucumber[test_index]['elements'][step_index]['tags'].append({
+                        "name": "@{}".format(tag),
+                        "line": test.get('lineno'),
+                    })
+
+                for keyword in test.get('keywords'):
+                    cucumber[test_index]['elements'][step_index]['steps'].append({
+                        "embeddings": [],
+                        "keyword": keyword.get('kwname').split()[0],
+                        "name": keyword.get('kwname').replace(keyword.get('kwname').split()[0], '').strip(),
+                        "line": keyword.get('lineno'),
+                        "match": {
+                            "arguments": [],
+                            "location": "{}:{}".format(keyword.get('source'), keyword.get('lineno'))
+                        },
+                        "result": {
+                            # valorVerdadeito if condicao else valorFalso
+                            "status": ("passed" if keyword.get('status').lower() == "pass" else "failed"),
+                            "duration": keyword.get('elapsedtime'),
+                        }
+                    })
+
+                test_index = test_index + 1
+
+            with open(join(os.path.abspath(os.curdir), 'cucumber.json'), 'w') as write_report_file:
+                json.dump(cucumber, write_report_file, indent=4)

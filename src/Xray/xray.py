@@ -261,3 +261,21 @@ class Xray:
             return json.loads(resp)
         else:
             print('Error import execution')
+
+    def importExecutionCucumber():
+        PROJECT_KEY = config.Config.project_key()
+        XRAY_API = config.Config.xray_api()
+
+        report = requests.post(f'{XRAY_API}/import/execution/cucumber', 
+            data = open('cucumber.json', 'rb'),
+            params = {
+                'projectKey': PROJECT_KEY,
+            },
+            headers = {
+                'Content-Type': 'application/json',
+                'Authorization': Xray.authentication()
+            }
+        )
+
+        if report.status_code != 200:
+            print('Error cucumber import execution')
