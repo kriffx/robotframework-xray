@@ -1,12 +1,12 @@
-import os, json, requests, config
-from os.path import join
+import json, requests
+from .config import Config
 from datetime import datetime
 
 class Xray:
     def authentication() -> str:
-        XRAY_API = config.Config.xray_api()
-        XRAY_CLIENT_ID = config.Config.xray_client_id()
-        XRAY_CLIENT_SECRET = config.Config.xray_client_secret()
+        XRAY_API = Config.xray_api()
+        XRAY_CLIENT_ID = Config.xray_client_id()
+        XRAY_CLIENT_SECRET = Config.xray_client_secret()
 
         json_data = json.dumps({'client_id': XRAY_CLIENT_ID, 'client_secret': XRAY_CLIENT_SECRET})
         resp = requests.post(f'{XRAY_API}/authenticate', data=json_data, headers={'Content-Type':'application/json'})
@@ -17,7 +17,7 @@ class Xray:
             print('Authentication error')
 
     def updateXrayTest(issueId: str, unstructured: str):
-        XRAY_API = config.Config.xray_api()
+        XRAY_API = Config.xray_api()
 
         auth_token = Xray.authentication()
         unstructured = unstructured.encode('unicode_escape').decode()
@@ -51,8 +51,7 @@ class Xray:
             Xray.updateXrayTest(issueId, unstructured)
 
     def updateXrayTestType(issueId: str):
-        XRAY_API = config.Config.xray_api()
-
+        XRAY_API = Config.xray_api()
         auth_token = Xray.authentication()
         
         json_data = f'''
@@ -83,7 +82,7 @@ class Xray:
             Xray.updateXrayTestType(issueId)
     
     def addEvidenceToTestRun(id: int, filename: str, data: str):
-        XRAY_API = config.Config.xray_api()
+        XRAY_API = Config.xray_api()
 
         json_data = f'''
             mutation {{
@@ -114,13 +113,11 @@ class Xray:
             },
         )
 
-        print(resp)
-
         if resp.status_code != 200:
             print('Error sending evidence')
 
     def getTest(testKey: str):
-        XRAY_API = config.Config.xray_api()
+        XRAY_API = Config.xray_api()
 
         json_data = f'''
             {{
@@ -146,15 +143,13 @@ class Xray:
             },
         )
 
-        print(resp)
-
         if resp.status_code == 200:
             return resp.json().get('data').get('getTests').get('results')[0].get('issueId')
         else:
             print('Error getting test ID')
     
     def getTestRun(testIssueId: str, testExecutionIssueId: str):
-        XRAY_API = config.Config.xray_api()
+        XRAY_API = Config.xray_api()
 
         json_data = f'''
             {{
@@ -178,16 +173,14 @@ class Xray:
             },
         )
 
-        print(resp)
-
         if resp.status_code == 200:
             return resp.json().get('data').get('getTestRun').get('id')
         else:
             print('Error getting run ID')
     
     def createTestExecution():
-        PROJECT_KEY = config.Config.project_key()
-        XRAY_API = config.Config.xray_api()
+        PROJECT_KEY = Config.project_key()
+        XRAY_API = Config.xray_api()
         test_execution_date = datetime.today().strftime('%Y-%m-%d %H:%M:%S')
 
         json_data = f'''
@@ -223,8 +216,6 @@ class Xray:
             },
         )
 
-        print(resp)
-
         result = json.dumps({
             'issueId': resp.json().get('data').get('createTestExecution').get('testExecution').get('issueId'),
             'key': resp.json().get('data').get('createTestExecution').get('testExecution').get('jira').get('key')
@@ -236,8 +227,8 @@ class Xray:
             print('Error create test execution')
     
     def importExecutionRobot():
-        PROJECT_KEY = config.Config.project_key()
-        XRAY_API = config.Config.xray_api()
+        PROJECT_KEY = Config.project_key()
+        XRAY_API = Config.xray_api()
         testExecKey = Xray.createTestExecution()
 
         report = requests.post(f'{XRAY_API}/import/execution/robot', 
@@ -263,8 +254,8 @@ class Xray:
             print('Error import execution')
 
     def importExecutionCucumber():
-        PROJECT_KEY = config.Config.project_key()
-        XRAY_API = config.Config.xray_api()
+        PROJECT_KEY = Config.project_key()
+        XRAY_API = Config.xray_api()
 
         report = requests.post(f'{XRAY_API}/import/execution/cucumber', 
             data = open('cucumber.json', 'rb'),

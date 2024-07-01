@@ -21,3 +21,6 @@ class Config:
     
     def xray_client_secret():
         return os.getenv('XRAY_CLIENT_SECRET', Config.get('XRAY_CLIENT_SECRET'))
+    
+    def cucumber_path():
+        return os.getenv('CUCUMBER_PATH', Config.get('CUCUMBER_PATH'))

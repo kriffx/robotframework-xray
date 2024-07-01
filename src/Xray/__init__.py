@@ -1,4 +1,4 @@
-from .listener import ListenerV2
+from .ListenerV2 import ListenerV2
 
 class Xray():
     ROBOT_LIBRARY_LISTENER = ListenerV2()

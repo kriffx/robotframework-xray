@@ -113,6 +113,7 @@ results/
 info.json
 *.webm
 *.png
+cucumber.json
 log.html
 output.xml
 report.html

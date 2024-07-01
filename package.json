@@ -1,6 +1,5 @@
 {
   "name": "robotframework-xray",
-  "version": "1.0.0",
   "scripts": {
     "freeze": "pip freeze > uninstall.txt",
     "build": "npm run freeze && npm run freeze && pip uninstall -r uninstall.txt -y && pip install -r requirements-dev.txt && python setup.py install"
