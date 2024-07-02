@@ -1,4 +1,5 @@
 import json, requests
+from ntpath import join
 from .config import Config
 from datetime import datetime
 
@@ -258,7 +259,7 @@ class Xray:
         XRAY_API = Config.xray_api()
 
         report = requests.post(f'{XRAY_API}/import/execution/cucumber', 
-            data = open('cucumber.json', 'rb'),
+            data = open(join(Config.cucumber_path(), 'cucumber.json'), 'rb'),
             params = {
                 'projectKey': PROJECT_KEY,
             },

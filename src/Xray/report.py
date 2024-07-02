@@ -120,5 +120,5 @@ class Report:
                         }
                     })
 
-        with open(join(Config.cucumber_path(), 'xcucumber.json'), 'w') as write_report_file:
+        with open(join(Config.cucumber_path(), 'cucumber.json'), 'w') as write_report_file:
             json.dump(cucumber, write_report_file, indent=4)
