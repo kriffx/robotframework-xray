@@ -66,12 +66,16 @@ class ListenerV2:
             "keywords": [],
             "video": '',
         })
+        
+        print("Carregando as tags...")
 
         for tag in attributes.get('tags'):
+            print(tag)
             if Config.project_key() in tag:
                 test = self.report[self.suite_index]['tests'][self.test_index]
                 test['xraytest'] = tag
 
+        print("Iniciando a gravação...")
         self.recorder.start_recording("{}.mp4".format(attributes.get('id')), 10)
 
     def end_test(self, name: str, attributes: EndTestAttributes):
