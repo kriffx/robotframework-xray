@@ -184,15 +184,9 @@ class ListenerV2:
         if Config.test_type() == "ROBOT":
             Report.robot(self.report)
             testExecutionId = Xray.importExecutionRobot()
-            print('Report sent successfully')
-            print('------------------------------------------------------------------------------')
-            print('Now if there is evidence we will be sending it, wait a moment...')
             self._send_evidence(self.report, testExecutionId['issueId'])
-            print('==============================================================================')
         elif Config.test_type() == "CUCUMBER":
             Report.cucumber(self.report)
-            print('Report sent successfully')
-            print('------------------------------------------------------------------------------')
             Xray.importExecutionCucumber()
         else:
             print('Set the TEST_TYPE in .env!')
