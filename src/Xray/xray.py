@@ -267,11 +267,11 @@ class Xray:
                 'Content-Type': 'application/json',
                 'Authorization': Xray.authentication()
             }
+            print("Requisição: ", data.json())
         )
 
         if report.status_code != 200:
             print('Error Cucumber import execution.')
-            #print('Requisição: ', data.json())
             print('Retorno: ', report.json())
         else:
             print('Successfully sent Cucumber import execution.')

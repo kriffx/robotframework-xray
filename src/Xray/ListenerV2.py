@@ -76,6 +76,13 @@ class ListenerV2:
 
     def end_test(self, name: str, attributes: EndTestAttributes):
         """Called when a test or task ends."""
+        print(self.report)
+        print(self.suite_index)
+        print(self.test_index)
+        print(self.report[self.suite_index])
+        print(self.report[self.suite_index]['tests'])
+        print(self.report[self.suite_index]['tests'][self.test_index])
+        
         test = self.report[self.suite_index]['tests'][self.test_index]
         test['endtime'] = attributes.get('endtime')
         test['elapsedtime'] = attributes.get('elapsedtime')
