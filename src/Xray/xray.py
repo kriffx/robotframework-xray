@@ -271,5 +271,7 @@ class Xray:
 
         if report.status_code != 200:
             print('Error Cucumber import execution.')
+            print('Retorno: ', report.json())
         else:
             print('Successfully sent Cucumber import execution.')
+            print('Retorno: ', report.status_code)
