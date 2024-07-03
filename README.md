@@ -79,3 +79,7 @@ Search for the sentence Worten in Google
 
 ## Local usage
 Create an `.env` file using `.env.example` as a base.
+
+
+# publicação
+py -m pip install build & py -m build --wheel & py -m build --sdist & twine upload dist/*

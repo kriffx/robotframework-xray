@@ -71,13 +71,13 @@ class Report:
         xml = ET.ElementTree(report)
         xml.write(file_or_filename='report.xml', encoding='UTF-8', xml_declaration=True)
 
+
     def cucumber(report_json):
         cucumber = []
-
         for suite_index, suite in enumerate(report_json):
             cucumber.append({
                 "keyword": "Feature",
-                "name": suite.get('longname'),
+                "name": suite.get('name'),
                 "line": 1,
                 "description": suite.get('doc'),
                 "tags": [],
@@ -85,7 +85,6 @@ class Report:
                 "uri": suite.get('source'),
                 "elements": [],
             })
-
             for test_index, test in enumerate(suite.get('tests')):
                 cucumber[suite_index]['elements'].append({
                     "keyword": "Scenario",
@@ -97,28 +96,27 @@ class Report:
                     "type": "scenario",
                     "steps": [],
                 })
-
                 for tag_index, tag in enumerate(test.get('tags')):
                     cucumber[suite_index]['elements'][test_index]['tags'].append({
                         "name": "@{}".format(tag),
                         "line": test.get('lineno'),
                     })
-
                 for step_index, step in enumerate(test.get('keywords')):
-                    cucumber[suite_index]['elements'][test_index]['steps'].append({
-                        "embeddings": [],
-                        "keyword": step.get('kwname').split()[0],
-                        "name": step.get('kwname').replace(step.get('kwname').split()[0], '').strip(),
-                        "line": step.get('lineno'),
-                        "match": {
-                            "arguments": [],
-                            "location": "{}:{}".format(step.get('source'), step.get('lineno'))
-                        },
-                        "result": {
-                            "status": ("passed" if step.get('status').lower() == "pass" else ("failed" if step.get('status').lower() == "fail" else "skipped")),
-                            "duration": step.get('elapsedtime'),
-                        }
-                    })
-
-        with open(join(Config.cucumber_path(), 'cucumber.json'), 'w') as write_report_file:
-            json.dump(cucumber, write_report_file, indent=4)
+                    if step.get('kwname').split()[0] in ['Given', 'When', 'Then', 'And', 'But', '*']:
+                        cucumber[suite_index]['elements'][test_index]['steps'].append({
+                            "embeddings": [],
+                            "keyword": step.get('kwname').split()[0],
+                            "name": step.get('kwname').replace(step.get('kwname').split()[0], '').strip(),
+                            "line": step.get('lineno'),
+                            "match": {
+                                "arguments": [],
+                                "location": "{}:{}".format(step.get('source'), step.get('lineno'))
+                            },
+                            "result": {
+                                "status": ("passed" if step.get('status').lower() == "pass" else ("failed" if step.get('status').lower() == "fail" else "skipped")),
+                                "duration": step.get('elapsedtime'),
+                            }
+                        })
+                        
+        with open(join(Config.cucumber_path(), 'cucumber.json'), 'w') as report_file:
+            json.dump(cucumber, report_file, indent=4)
