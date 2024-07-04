@@ -77,7 +77,7 @@ class Report:
         for suite_index, suite in enumerate(report_json):
             cucumber.append({
                 "keyword": "Feature",
-                "name": suite.get('name'),
+                "name": suite.get('longname'),
                 "line": 1,
                 "description": suite.get('doc'),
                 "tags": [],
