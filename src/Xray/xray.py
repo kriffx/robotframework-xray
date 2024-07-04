@@ -269,8 +269,7 @@ class Xray:
             }
         )
 
-        print("cucumber.json content:")
-        print(open(join(Config.cucumber_path(), 'cucumber.json'), 'rb'))
+        print("cucumber.json content:", Config.cucumber_path())
 
         if report.status_code != 200:
             print('Error Cucumber import execution.')
