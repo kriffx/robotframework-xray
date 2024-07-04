@@ -117,6 +117,8 @@ class Report:
                                 "duration": step.get('elapsedtime'),
                             }
                         })
-                        
+
+        print('Cucumber data = ', cucumber)
+
         with open(join(Config.cucumber_path(), 'cucumber.json'), 'w') as report_file:
             json.dump(cucumber, report_file, indent=4)
