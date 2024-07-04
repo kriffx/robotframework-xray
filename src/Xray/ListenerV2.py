@@ -76,18 +76,19 @@ class ListenerV2:
 
     def end_test(self, name: str, attributes: EndTestAttributes):
         """Called when a test or task ends."""
-        print(self.report)
-        print(self.suite_index)
-        print(self.test_index)
-        print(self.report[self.suite_index])
-        print(self.report[self.suite_index]['tests'])
-        print(self.report[self.suite_index]['tests'][self.test_index])
         
+        print(self.report[self.suite_index]['tests'][self.test_index])
+
         test = self.report[self.suite_index]['tests'][self.test_index]
+        print("endtime")
         test['endtime'] = attributes.get('endtime')
+        print("endtime")
         test['elapsedtime'] = attributes.get('elapsedtime')
+        print("elapsedtime")
         test['status'] = attributes.get('status')
+        print("status")
         test['message'] = attributes.get('message')
+        print("message")
 
         self.recorder.stop_recording()
         try:

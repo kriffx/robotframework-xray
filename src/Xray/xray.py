@@ -267,8 +267,10 @@ class Xray:
                 'Content-Type': 'application/json',
                 'Authorization': Xray.authentication()
             }
-            print("Requisição: ", data.json())
         )
+
+        print("cucumber.json content:")
+        print(open(join(Config.cucumber_path(), 'cucumber.json'), 'rb'))
 
         if report.status_code != 200:
             print('Error Cucumber import execution.')
