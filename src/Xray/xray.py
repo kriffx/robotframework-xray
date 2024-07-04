@@ -20,106 +20,6 @@ class Xray:
             print('Authentication error: ', resp.status_code)
 
 
-    def addVideoEvidenceToTestRun(id: int, filename: str, data: str):
-        XRAY_API = Config.xray_api()
-
-        json_data = f'''
-            mutation {{
-                addEvidenceToTestRun(
-                    id: "{ id }",
-                    evidence: [
-                        {{
-                            filename: "{ filename }"
-                            mimeType: "video/mp4"
-                            data: "{ data }"
-                        }}
-                    ]
-                ) {{
-                    addedEvidence
-                    warnings
-                }}
-            }}
-        '''
-
-        resp = requests.post(
-            f'{XRAY_API}/graphql',
-            json={
-                'query': json_data
-            },
-            headers={
-                'Content-Type': 'application/json',
-                'Authorization': Xray.authentication()
-            },
-        )
-
-        if resp.status_code != 200:
-            print('Error sending video evidence: ', resp.status_code)
-        else:
-            print('Video evidence successfully saved.')
-
-
-    def getTest(testKey: str):
-        XRAY_API = Config.xray_api()
-
-        json_data = f'''
-            {{
-                getTests(
-                    jql: "key = '{ testKey }'",
-                    limit: 1
-                ) {{
-                    results {{
-                        issueId
-                    }}
-                }}
-            }}
-        '''
-
-        resp = requests.get(
-            f'{XRAY_API}/graphql',
-            json={'query': json_data},
-            headers={
-                'Content-Type': 'application/json',
-                'Authorization': Xray.authentication()
-            },
-        )
-
-        if resp.status_code == 200:
-            issueId = resp.json().get('data').get('getTests').get('results')[0].get('issueId')
-            print('Issue ID = ', issueId)
-            return issueId
-        else:
-            print('Error getting test ID: ', resp.status_code)
-    
-
-    def getTestRun(testIssueId: str, testExecutionIssueId: str):
-        XRAY_API = Config.xray_api()
-
-        json_data = f'''
-            {{
-                getTestRun(
-                    testIssueId: "{ testIssueId }",
-                    testExecIssueId: "{ testExecutionIssueId }"
-                ) {{id }}
-            }}
-        '''
-
-        resp = requests.get(
-            f'{XRAY_API}/graphql',
-            json={'query': json_data},
-            headers={
-                'Content-Type': 'application/json',
-                'Authorization': Xray.authentication()
-            },
-        )
-
-        if resp.status_code == 200:
-            testRunId = resp.json().get('data').get('getTestRun').get('id')
-            print('Test run ID = ', testRunId)
-            return testRunId
-        else:
-            print('Error getting run ID: ', resp.status_code)
-    
-
     def createTestExecution():
         PROJECT_KEY = Config.project_key()
         XRAY_API = Config.xray_api()
@@ -199,15 +99,13 @@ class Xray:
     def importExecutionCucumber():
         PROJECT_KEY = Config.project_key()
         XRAY_API = Config.xray_api()
-        # testExecKey = Xray.createTestExecution()
 
         print("cucumber.json file path:", join(Config.cucumber_path(), 'cucumber.json'))
 
         report = requests.post(f'{XRAY_API}/import/execution/cucumber', 
             data = open(join(Config.cucumber_path(), 'cucumber.json'), 'rb'),
             params = { 
-                'projectKey': PROJECT_KEY,
-                # 'testExecKey': testExecKey['key'],
+                'projectKey': PROJECT_KEY
             },
             headers = {
                 'Content-Type': 'application/json',

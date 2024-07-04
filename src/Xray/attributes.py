@@ -6,7 +6,7 @@ if sys.version_info >= (3, 10):
 else:
     UnionType = type
 
-# Attribute dictionary specifications used by ListenerV2.
+# Attribute dictionary specifications used by Listener.
 class StartSuiteAttributes(TypedDict):
     """Attributes passed to listener v2 ``start_suite`` method.
 

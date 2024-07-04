@@ -6,7 +6,7 @@ from robot.libraries.BuiltIn import BuiltIn
 
 b = BuiltIn()
 
-class ListenerV2:
+class Listener:
     """Optional base class for listeners using the listener API version 2."""
     ROBOT_LISTENER_API_VERSION = 2
     ROBOT_LIBRARY_SCOPE = "GLOBAL"
