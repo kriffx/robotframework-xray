@@ -1,4 +1,3 @@
-#import os, base64, pyscreenrec
 from .attributes import *
 from .config import Config
 from .report import Report
@@ -19,7 +18,6 @@ class ListenerV2:
         self.suite_index = 0
         self.test_index = 0
         self.keyword_index = 0
-        #self.recorder = pyscreenrec.ScreenRecorder()
 
 
     def start_suite(self, name: str, attributes: StartSuiteAttributes):
@@ -75,8 +73,6 @@ class ListenerV2:
             if Config.project_key() in tag:
                 test = self.report[self.suite_index]['tests'][self.test_index]
                 test['xraytest'] = tag
-
-        #self.recorder.start_recording("{}.mp4".format(attributes.get('id')), 10)
 
 
     def end_test(self, name: str, attributes: EndTestAttributes):
@@ -197,14 +193,3 @@ class ListenerV2:
         else:
             print('Set the TEST_TYPE in .env!')
     
-
-    # def _send_evidence(self, report, testExecutionId):
-    #     for suite in report:
-    #         for test in suite['tests']:
-    #             if test['video'] and test['xraytest']:
-    #                 xrayTestIssueId = Xray.getTest(test['xraytest'])
-    #                 id = Xray.getTestRun(xrayTestIssueId, testExecutionId)
-    #                 Xray.addVideoEvidenceToTestRun(id, 'Evidence_{}.mp4'.format(test['xraytest']), test['video'])
-    #                 print('- {} test evidence submitted successfully!'.format(test['xraytest']))
-    #             else:
-    #                 print('- {} test does not have evidence, skip step...'.format(test['xraytest']))
