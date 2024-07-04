@@ -90,20 +90,20 @@ class ListenerV2:
         test['message'] = attributes.get('message')
         print("message")
 
-        self.recorder.stop_recording()
-        try:
-            recording = "{}.mp4".format(attributes.get('id'))
-            with open(recording, 'rb') as video_file:
-                test['video'] = base64.b64encode(video_file.read()).decode('utf-8')
+        # self.recorder.stop_recording()
+        # try:
+        #     recording = "{}.mp4".format(attributes.get('id'))
+        #     with open(recording, 'rb') as video_file:
+        #         test['video'] = base64.b64encode(video_file.read()).decode('utf-8')
 
-            if os.path.isfile(recording):
-                os.remove(recording)
-            else:
-                print("Error: %s file not found" % recording)
-        except Exception:
-            print("An error occurred while generating/attaching the video to the test.")
+        #     if os.path.isfile(recording):
+        #         os.remove(recording)
+        #     else:
+        #         print("Error: %s file not found" % recording)
+        # except Exception:
+        #     print("An error occurred while generating/attaching the video to the test.")
 
-        self.test_index = self.test_index + 1
+        self.test_index += 1
         self.keyword_index = 0
 
     def start_keyword(self, name: str, attributes: StartKeywordAttributes):
@@ -149,6 +149,7 @@ class ListenerV2:
         itself logs some messages. These messages end up to output.xml and
         log.html.
         """
+        pass
 
     def message(self, message: MessageAttributes):
         """Called when framework's internal messages are emitted.
