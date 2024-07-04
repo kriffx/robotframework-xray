@@ -6,7 +6,7 @@ with open(join(dirname(abspath(__file__)), 'requirements.txt'), encoding='utf-8'
 
 setup(
     name = 'robotframework-xray',
-    version = '2.0dev19',
+    version = '2.0dev20',
     author = 'Cleverson Sampaio',
     author_email = 'cleverson@sampaio.dev.br',
     url = 'https://github.com/kriffx/robotframework-xray',
