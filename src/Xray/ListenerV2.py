@@ -27,7 +27,7 @@ class ListenerV2:
         self.report.append({
             "id": attributes.get('id'),
             "longname": attributes.get('longname'),
-            "doc": attributes.get('doc'),
+            "doc": attributes.get('doc') + ' Test Suite.',
             "metadata": attributes.get('metadata'),
             "source": attributes.get('source'),
             "suites": attributes.get('suites'),
@@ -99,6 +99,7 @@ class ListenerV2:
         structures can contain extra attributes that are only relevant to them.
         """
         keyword = self.report[self.suite_index]['tests'][self.test_index]
+        print(attributes)
         keyword['keywords'].append({
             "type": attributes.get('type'),
             "kwname": attributes.get('kwname'),
@@ -163,7 +164,7 @@ class ListenerV2:
 
         At this point the file is guaranteed to be closed.
         """
-
+        print('potencial screenshot')
 
     def log_file(self, path: str):
         """Called after the log file has been created."""
