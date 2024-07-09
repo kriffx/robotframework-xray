@@ -1,9 +1,10 @@
+import logging
 import json, requests
-from logging import error, info
 from ntpath import join
-from .config import Config
 from datetime import datetime
+from .config import Config
 
+logger = logging.getLogger(__name__)
 
 class Xray:
     '''
@@ -27,10 +28,10 @@ class Xray:
         resp = requests.post(f'{self.XRAY_API}/authenticate', data=json_data, headers={'Content-Type':'application/json'})
             
         if resp.status_code == 200:
-            info("Authentication successfully!")
+            print("Authentication successfully!")
             return f'Bearer {resp.json()}'
         else:
-            error('Authentication error: ', resp.status_code)
+            logger.error('Authentication error: ', resp.status_code)
 
 
     def createTestExecution(self):
@@ -46,7 +47,7 @@ class Xray:
             json={ 'info': json_data },
             headers={
                 'Content-Type': 'application/json',
-                'Authorization': Xray.authentication()
+                'Authorization': self.authentication()
             },
         )
 
@@ -56,8 +57,8 @@ class Xray:
         })
 
         if response.status_code == 200:
-            info('Created new test execution: ', result['key'])
+            print('Created new test execution: ', result['key'])
             return json.loads(result)
         else:
-            error('Error create test execution: ', response.json())
+            logger.error('Error create test execution: ', response.json())
     
