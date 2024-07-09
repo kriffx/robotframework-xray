@@ -1,55 +1,49 @@
 import json, requests
+from logging import error, info
 from ntpath import join
 from .config import Config
 from datetime import datetime
 
+
 class Xray:
+    '''
+    Classe responsável pela comunicação com a API do X-Ray.
+    Documentação oficial: https://docs.getxray.app/display/XRAY/v2.0.
+    '''
+
+    XRAY_API : str = Config.xray_api()
+    PROJECT_KEY : str = Config.project_key()
     
-    
-    def authentication() -> str:
-        XRAY_API = Config.xray_api()
+
+    def authentication(self) -> str:
+        '''
+        Realiza a autenticação na API e retorna o token que deve 
+        ser utilizado nas outras requisições.
+        '''
         XRAY_CLIENT_ID = Config.xray_client_id()
         XRAY_CLIENT_SECRET = Config.xray_client_secret()
 
         json_data = json.dumps({'client_id': XRAY_CLIENT_ID, 'client_secret': XRAY_CLIENT_SECRET})
-        resp = requests.post(f'{XRAY_API}/authenticate', data=json_data, headers={'Content-Type':'application/json'})
+        resp = requests.post(f'{self.XRAY_API}/authenticate', data=json_data, headers={'Content-Type':'application/json'})
             
         if resp.status_code == 200:
+            info("Authentication successfully!")
             return f'Bearer {resp.json()}'
         else:
-            print('Authentication error: ', resp.status_code)
+            error('Authentication error: ', resp.status_code)
 
 
-    def createTestExecution():
-        PROJECT_KEY = Config.project_key()
-        XRAY_API = Config.xray_api()
+    def createTestExecution(self):
         test_execution_date = datetime.today().strftime('%Y-%m-%d %H:%M:%S')
 
-        json_data = f'''
-            mutation {{
-                createTestExecution(
-                    testIssueIds: [],
-                    testEnvironments: [],
-                    jira: {{
-                        fields: {{
-                            summary: "QA Automation Execution | { test_execution_date }",
-                            project: {{ key: "{ PROJECT_KEY }" }}
-                        }}
-                    }}
-                ) {{
-                    testExecution {{
-                        issueId
-                        jira(fields: ["key"])
-                    }}
-                    warnings
-                    createdTestEnvironments
-                }}
-            }}
-        '''
-
-        resp = requests.post(
-            f'{XRAY_API}/graphql',
-            json={ 'query': json_data },
+        json_data = {
+            "summary": "Execução automática do Robot",
+            "startDate": test_execution_date
+        }
+        print(json_data)
+        response = requests.post(
+            f'{self.XRAY_API}/import/execution',
+            json={ 'info': json_data },
             headers={
                 'Content-Type': 'application/json',
                 'Authorization': Xray.authentication()
@@ -57,65 +51,13 @@ class Xray:
         )
 
         result = json.dumps({
-            'issueId': resp.json().get('data').get('createTestExecution').get('testExecution').get('issueId'),
-            'key': resp.json().get('data').get('createTestExecution').get('testExecution').get('jira').get('key')
+            'issueId': response.json().get('data').get('createTestExecution').get('testExecution').get('issueId'),
+            'key': response.json().get('data').get('createTestExecution').get('testExecution').get('jira').get('key')
         })
 
-        if resp.status_code == 200:
-            print('Created new test execution.')
+        if response.status_code == 200:
+            info('Created new test execution: ', result['key'])
             return json.loads(result)
         else:
-            print('Error create test execution: ', resp.json())
+            error('Error create test execution: ', response.json())
     
-
-    def importExecutionRobot():
-        PROJECT_KEY = Config.project_key()
-        XRAY_API = Config.xray_api()
-        testExecKey = Xray.createTestExecution()
-
-        report = requests.post(f'{XRAY_API}/import/execution/robot', 
-            data=open('report.xml', 'rb'),
-            params={
-                'projectKey': PROJECT_KEY,
-                'testExecKey': testExecKey['key'],
-            },
-            headers={
-                'Content-Type': 'application/xml',
-                'Authorization': Xray.authentication()
-            }
-        )
-
-        resp = json.dumps({
-            'issueId': testExecKey['issueId'],
-            'key': report.json().get('key')
-        })
-
-        if report.status_code == 200:
-            return json.loads(resp)
-        else:
-            print('Error import execution')
-
-
-    def importExecutionCucumber():
-        PROJECT_KEY = Config.project_key()
-        XRAY_API = Config.xray_api()
-
-        print("cucumber.json file path:", join(Config.cucumber_path(), 'cucumber.json'))
-
-        report = requests.post(f'{XRAY_API}/import/execution/cucumber', 
-            data = open(join(Config.cucumber_path(), 'cucumber.json'), 'rb'),
-            params = { 
-                'projectKey': PROJECT_KEY
-            },
-            headers = {
-                'Content-Type': 'application/json',
-                'Authorization': Xray.authentication()
-            }
-        )
-
-        if report.status_code != 200:
-            print('Error Cucumber import execution: ', report.status_code)
-        else:
-            print('Successfully sent Cucumber import execution.')
-        
-        print('Retorno: ', report.json())
