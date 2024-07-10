@@ -1,8 +1,8 @@
 *** Settings ***
 Documentation       Test scenarios for Google.
-
+Metadata            Test Plan         DBS-1001
 Library             SeleniumLibrary    run_on_failure=Capture Page Screenshot    screenshot_root_directory=EMBED
-Library             ../src/Xray/Listener.py
+Library             ../src/xray/Listener.py
 
 *** Test Cases ***
 Google page test

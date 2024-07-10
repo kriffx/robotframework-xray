@@ -1,6 +1,7 @@
 {
   "name": "robotframework-xray",
   "scripts": {
+    "test": "robot -d reports/ tests/",
     "freeze": "pip freeze > uninstall.txt",
     "uninstall": "pip uninstall -r uninstall.txt -y",
     "install": "pip install -r requirements-dev.txt",

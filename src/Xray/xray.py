@@ -2,7 +2,8 @@ import logging
 import json, requests
 from ntpath import join
 from datetime import datetime
-from .config import Config
+from config import Config
+from utils import find_tag
 
 logger = logging.getLogger(__name__)
 
@@ -34,29 +35,40 @@ class Xray:
             logger.error('Authentication error: ', resp.status_code)
 
 
-    def createTestExecution(self):
+    def createTestExecution(self, test_plan_key : str, tests):
         test_execution_date = datetime.today().strftime('%Y-%m-%d %H:%M:%S')
 
-        json_data = {
+        suite_data = {
             "summary": "Execução automática do Robot",
-            "startDate": test_execution_date
+            "startDate": test_execution_date,
+            "testPlanKey": test_plan_key
         }
-        print(json_data)
+        test_data = []
+        for test in tests:
+            print(test.tags)
+            test_data.append({
+                "testKey": find_tag(test.tags),
+                "start": test_execution_date,
+                "status": "EXECUTING"
+            })
+
+        print(suite_data)
+        print(test_data)
+        
         response = requests.post(
             f'{self.XRAY_API}/import/execution',
-            json={ 'info': json_data },
+            json={ 'info': suite_data, 'tests': test_data },
             headers={
                 'Content-Type': 'application/json',
                 'Authorization': self.authentication()
             },
         )
 
-        result = json.dumps({
-            'issueId': response.json().get('data').get('createTestExecution').get('testExecution').get('issueId'),
-            'key': response.json().get('data').get('createTestExecution').get('testExecution').get('jira').get('key')
-        })
-
         if response.status_code == 200:
+            result = json.dumps({
+                'issueId': response.json().get('data').get('createTestExecution').get('testExecution').get('issueId'),
+                'key': response.json().get('data').get('createTestExecution').get('testExecution').get('jira').get('key')
+            })
             print('Created new test execution: ', result['key'])
             return json.loads(result)
         else:
