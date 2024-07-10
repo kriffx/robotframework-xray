@@ -103,7 +103,7 @@ class Xray:
         print("cucumber.json file path:", join(Config.cucumber_path(), 'cucumber.json'))
 
         report = requests.post(f'{XRAY_API}/import/execution/cucumber', 
-            data = open(join(Config.cucumber_path(), 'cucumber.json'), 'rb'),
+            data = open(Config.cucumber_path() + 'cucumber.json', 'rb'),
             params = { 
                 'projectKey': PROJECT_KEY
             },
