@@ -95,7 +95,7 @@ class Listener:
         structures can contain extra attributes that are only relevant to them.
         """
         keyword = self.report[self.suite_index]['tests'][self.test_index]
-        print(attributes)
+        # print(attributes)
         keyword['keywords'].append({
             "type": attributes.get('type'),
             "kwname": attributes.get('kwname'),

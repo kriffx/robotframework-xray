@@ -1,4 +1,5 @@
 import json, requests
+import os
 from ntpath import join
 from .config import Config
 from datetime import datetime
@@ -7,17 +8,19 @@ class Xray:
     
     
     def authentication() -> str:
-        XRAY_API = Config.xray_api()
-        XRAY_CLIENT_ID = Config.xray_client_id()
-        XRAY_CLIENT_SECRET = Config.xray_client_secret()
+        print("Autenticação via JWT TOKEN = ", os.getenv('JWT_TOKEN'))
+        return f'Bearer {os.getenv('JWT_TOKEN')}'
+        # XRAY_API = Config.xray_api()
+        # XRAY_CLIENT_ID = Config.xray_client_id()
+        # XRAY_CLIENT_SECRET = Config.xray_client_secret()
 
-        json_data = json.dumps({'client_id': XRAY_CLIENT_ID, 'client_secret': XRAY_CLIENT_SECRET})
-        resp = requests.post(f'{XRAY_API}/authenticate', data=json_data, headers={'Content-Type':'application/json'})
+        # json_data = json.dumps({'client_id': XRAY_CLIENT_ID, 'client_secret': XRAY_CLIENT_SECRET})
+        # resp = requests.post(f'{XRAY_API}/authenticate', data=json_data, headers={'Content-Type':'application/json'})
             
-        if resp.status_code == 200:
-            return f'Bearer {resp.json()}'
-        else:
-            print('Authentication error: ', resp.status_code)
+        # if resp.status_code == 200:
+        #     return f'Bearer {resp.json()}'
+        # else:
+        #     print('Authentication error: ', resp.status_code)
 
 
     def createTestExecution():
