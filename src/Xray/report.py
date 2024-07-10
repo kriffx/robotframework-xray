@@ -120,5 +120,5 @@ class Report:
 
         print('Cucumber data = ', cucumber)
 
-        with open(Config.cucumber_path() + 'cucumber.json', 'w') as report_file:
+        with open(Config.cucumber_path() + '/cucumber.json', 'w') as report_file:
             json.dump(cucumber, report_file, indent=4)
