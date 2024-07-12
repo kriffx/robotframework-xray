@@ -8,19 +8,22 @@ class Xray:
     
     
     def authentication() -> str:
-        print("Autenticação via JWT TOKEN = ", os.getenv('JWT_TOKEN'))
-        return f'Bearer {os.getenv('JWT_TOKEN')}'
-        # XRAY_API = Config.xray_api()
-        # XRAY_CLIENT_ID = Config.xray_client_id()
-        # XRAY_CLIENT_SECRET = Config.xray_client_secret()
+        if os.getenv('JWT_TOKEN'):
+            print("Autenticação via JWT TOKEN = ", os.getenv('JWT_TOKEN'))
+            return 'Bearer ' + os.getenv('JWT_TOKEN')
+        
+        print("Token JWT não configurado, gerando outro...")
+        XRAY_API = Config.xray_api()
+        XRAY_CLIENT_ID = Config.xray_client_id()
+        XRAY_CLIENT_SECRET = Config.xray_client_secret()
 
-        # json_data = json.dumps({'client_id': XRAY_CLIENT_ID, 'client_secret': XRAY_CLIENT_SECRET})
-        # resp = requests.post(f'{XRAY_API}/authenticate', data=json_data, headers={'Content-Type':'application/json'})
+        json_data = json.dumps({'client_id': XRAY_CLIENT_ID, 'client_secret': XRAY_CLIENT_SECRET})
+        resp = requests.post(f'{XRAY_API}/authenticate', data=json_data, headers={'Content-Type':'application/json'})
             
-        # if resp.status_code == 200:
-        #     return f'Bearer {resp.json()}'
-        # else:
-        #     print('Authentication error: ', resp.status_code)
+        if resp.status_code == 200:
+            return 'Bearer ' + resp.json()
+        else:
+            print('Authentication error: ', resp.status_code)
 
 
     def createTestExecution():
