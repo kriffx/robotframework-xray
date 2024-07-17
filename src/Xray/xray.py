@@ -1,12 +1,9 @@
-import json, requests
-import os
+import json, requests, os
 from ntpath import join
 from .config import Config
 from datetime import datetime
 
 class Xray:
-    
-    
     def authentication() -> str:
         if os.getenv('JWT_TOKEN'):
             print("Autenticação via JWT TOKEN = ", os.getenv('JWT_TOKEN'))
@@ -72,35 +69,6 @@ class Xray:
             return json.loads(result)
         else:
             print('Error create test execution: ', resp.json())
-    
-
-    def importExecutionRobot():
-        PROJECT_KEY = Config.project_key()
-        XRAY_API = Config.xray_api()
-        testExecKey = Xray.createTestExecution()
-
-        report = requests.post(f'{XRAY_API}/import/execution/robot', 
-            data=open('report.xml', 'rb'),
-            params={
-                'projectKey': PROJECT_KEY,
-                'testExecKey': testExecKey['key'],
-            },
-            headers={
-                'Content-Type': 'application/xml',
-                'Authorization': Xray.authentication()
-            }
-        )
-
-        resp = json.dumps({
-            'issueId': testExecKey['issueId'],
-            'key': report.json().get('key')
-        })
-
-        if report.status_code == 200:
-            return json.loads(resp)
-        else:
-            print('Error import execution')
-
 
     def importExecutionCucumber():
         PROJECT_KEY = Config.project_key()

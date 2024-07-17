@@ -2,8 +2,8 @@
 Documentation       Test scenarios for Google.
 
 Library             SeleniumLibrary    run_on_failure=Capture Page Screenshot    screenshot_root_directory=EMBED
-# Library             ../src/Xray/ListenerV2.py
-Library             Xray
+Library             ../src/Xray/Listener.py
+# Library             Xray
 
 *** Test Cases ***
 Google page test

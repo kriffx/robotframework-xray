@@ -2,6 +2,10 @@ from .attributes import *
 from .config import Config
 from .report import Report
 from .xray import Xray
+import base64
+from ntpath import join
+from bs4 import BeautifulSoup
+# import attributes, config, report, xray
 from robot.libraries.BuiltIn import BuiltIn
 
 b = BuiltIn()
@@ -11,14 +15,12 @@ class Listener:
     ROBOT_LISTENER_API_VERSION = 2
     ROBOT_LIBRARY_SCOPE = "GLOBAL"
 
-
     def __init__(self):
         self.ROBOT_LIBRARY_LISTENER = self
         self.report = []
         self.suite_index = 0
         self.test_index = 0
         self.keyword_index = 0
-
 
     def start_suite(self, name: str, attributes: StartSuiteAttributes):
         """Called when a suite starts."""
@@ -34,7 +36,6 @@ class Listener:
             "starttime": attributes.get('starttime'),
         })
 
-
     def end_suite(self, name: str, attributes: EndSuiteAttributes):
         """Called when a suite end."""
         suite = self.report[self.suite_index]
@@ -47,7 +48,6 @@ class Listener:
         self.suite_index += 1
         self.test_index = 0
         self.keyword_index = 0
-
 
     def start_test(self, name: str, attributes: StartTestAttributes):
         """Called when a test or task starts."""
@@ -74,7 +74,6 @@ class Listener:
                 test = self.report[self.suite_index]['tests'][self.test_index]
                 test['xraytest'] = tag
 
-
     def end_test(self, name: str, attributes: EndTestAttributes):
         """Called when a test or task ends."""
         
@@ -86,7 +85,6 @@ class Listener:
         
         self.test_index += 1
         self.keyword_index = 0
-
 
     def start_keyword(self, name: str, attributes: StartKeywordAttributes):
         """Called when a keyword or a control structure like IF starts.
@@ -110,8 +108,8 @@ class Listener:
             "starttime": attributes.get('starttime'),
             "endtime": '',
             "elapsedtime": 0,
+            "evidence": '',
         })
-
 
     def end_keyword(self, name: str, attributes: EndKeywordAttributes):
         """Called when a keyword or a control structure like IF ends.
@@ -126,7 +124,6 @@ class Listener:
 
         self.keyword_index = self.keyword_index + 1
 
-
     def log_message(self, message: MessageAttributes):
         """Called when a normal log message are emitted.
 
@@ -134,6 +131,28 @@ class Listener:
         itself logs some messages. These messages end up to output.xml and
         log.html.
         """
+        if message['message'].__contains__('<img'):
+            soup = BeautifulSoup(message['message'], 'html.parser')
+            image_src = soup.img.get('src')
+
+            if not image_src.__contains__('data:image/png;base64,'):
+                with open(join(BuiltIn().get_variable_value('${OUTPUT_DIR}'), image_src), 'rb') as img_file:
+                    b64_string = base64.b64encode(img_file.read())
+                    keyword = self.report[self.suite_index]['tests'][self.test_index]['keywords'][self.keyword_index]
+                    keyword['evidence'] = '{}{}'.format('data:image/png;base64,', b64_string.decode('utf-8'))
+            else:
+                keyword = self.report[self.suite_index]['tests'][self.test_index]['keywords'][self.keyword_index]
+                # keyword['evidence'] = image_src.replace('data:image/png;', '')
+                keyword['evidence'] = image_src
+
+        # self.report[self.suite_index]['tests'][self.test_index]['keywords'][self.source_kw_index]['messages'].append({
+        #     'timestamp': message['timestamp'],
+        #     'message': message['message'],
+        #     'level': message['level'],
+        #     'html': message['html'],
+        # })
+
+        # self._update_report_file()
 
     def message(self, message: MessageAttributes):
         """Called when framework's internal messages are emitted.
@@ -142,54 +161,44 @@ class Listener:
         if it is enabled.
         """
 
-
     def library_import(self, name: str, attributes: LibraryAttributes):
         """Called after a library has been imported."""
-
 
     def resource_import(self, name: str, attributes: ResourceAttributes):
         """Called after a resource file has been imported."""
 
-
     def variables_import(self, name: str, attributes: VariablesAttributes):
         """Called after a variable file has been imported."""
-
 
     def output_file(self, path: str):
         """Called after the output file has been created.
 
         At this point the file is guaranteed to be closed.
         """
-        print('potencial screenshot')
 
     def log_file(self, path: str):
         """Called after the log file has been created."""
 
-
     def report_file(self, path: str):
         """Called after the report file has been created."""
-
 
     def xunit_file(self, path: str):
         """Called after the xunit compatible output file has been created."""
 
-
     def debug_file(self, path: str):
         """Called after the debug file has been created."""
-
 
     def close(self):
         """Called when the whole execution ends.
 
         With library listeners called when the library goes out of scope.
         """
-        if Config.test_type() == "ROBOT":
-            Report.robot(self.report)
-            testExecutionId = Xray.importExecutionRobot()
-            # self._send_evidence(self.report, testExecutionId['issueId'])
-        elif Config.test_type() == "CUCUMBER":
-            Report.cucumber(self.report)
-            Xray.importExecutionCucumber()
-        else:
-            print('Set the TEST_TYPE in .env!')
-    
+        # if Config.test_type() == "ROBOT":
+        #     Report.robot(self.report)
+        #     testExecutionId = Xray.importExecutionRobot()
+        #     # self._send_evidence(self.report, testExecutionId['issueId'])
+        # elif Config.test_type() == "CUCUMBER":
+        Report.cucumber(self.report)
+        Xray.importExecutionCucumber()
+        # else:
+        #     print('Set the TEST_TYPE in .env!')
