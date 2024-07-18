@@ -2,7 +2,7 @@
 import logging
 from robot.libraries.BuiltIn import BuiltIn
 from robot import result, running
-from xray import Xray
+from .xray import Xray
 
 logger = logging.getLogger(__name__)
 
