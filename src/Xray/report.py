@@ -1,6 +1,6 @@
-import platform, json
+import platform, json, config
 from ntpath import join
-from .config import Config
+# from .config import Config
 import xml.etree.ElementTree as ET
 
 class Report:
@@ -75,10 +75,8 @@ class Report:
                                 }
                             })
 
-        print('Cucumber data = ', cucumber)
-
-        with open(Config.cucumber_path() + '/report.json', 'w') as report_file:
+        with open(config.Config.cucumber_path() + '/report.json', 'w') as report_file:
             json.dump(report_json, report_file, indent=4)
 
-        with open(Config.cucumber_path() + '/cucumber.json', 'w') as report_file:
+        with open(config.Config.cucumber_path() + '/cucumber.json', 'w') as report_file:
             json.dump(cucumber, report_file, indent=4)

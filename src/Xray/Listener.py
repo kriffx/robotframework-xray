@@ -1,11 +1,11 @@
+import base64
+# import attributes, config, report, xray, base64
 from .attributes import *
 from .config import Config
 from .report import Report
 from .xray import Xray
-import base64
 from ntpath import join
 from bs4 import BeautifulSoup
-# import attributes, config, report, xray
 from robot.libraries.BuiltIn import BuiltIn
 
 b = BuiltIn()
@@ -65,6 +65,7 @@ class Listener:
             "elapsedtime": 0,
             "message": '',
             "xraytest": '',
+            "issueId": '',
             "keywords": [],
             "video": '',
         })
@@ -73,10 +74,10 @@ class Listener:
             if Config.project_key() in tag:
                 test = self.report[self.suite_index]['tests'][self.test_index]
                 test['xraytest'] = tag
+                test['issueId'] = Xray.getTest(tag)
 
     def end_test(self, name: str, attributes: EndTestAttributes):
         """Called when a test or task ends."""
-        
         test = self.report[self.suite_index]['tests'][self.test_index]
         test['endtime'] = attributes.get('endtime')
         test['elapsedtime'] = attributes.get('elapsedtime')
@@ -93,7 +94,6 @@ class Listener:
         structures can contain extra attributes that are only relevant to them.
         """
         keyword = self.report[self.suite_index]['tests'][self.test_index]
-        # print(attributes)
         keyword['keywords'].append({
             "type": attributes.get('type'),
             "kwname": attributes.get('kwname'),
@@ -139,20 +139,11 @@ class Listener:
                 with open(join(BuiltIn().get_variable_value('${OUTPUT_DIR}'), image_src), 'rb') as img_file:
                     b64_string = base64.b64encode(img_file.read())
                     keyword = self.report[self.suite_index]['tests'][self.test_index]['keywords'][self.keyword_index]
-                    keyword['evidence'] = '{}{}'.format('data:image/png;base64,', b64_string.decode('utf-8'))
+                    keyword['evidence'] = '{}'.format(b64_string.decode('utf-8'))
+                    # keyword['evidence'] = '{}{}'.format('data:image/png;base64,', b64_string.decode('utf-8'))
             else:
                 keyword = self.report[self.suite_index]['tests'][self.test_index]['keywords'][self.keyword_index]
-                # keyword['evidence'] = image_src.replace('data:image/png;', '')
-                keyword['evidence'] = image_src
-
-        # self.report[self.suite_index]['tests'][self.test_index]['keywords'][self.source_kw_index]['messages'].append({
-        #     'timestamp': message['timestamp'],
-        #     'message': message['message'],
-        #     'level': message['level'],
-        #     'html': message['html'],
-        # })
-
-        # self._update_report_file()
+                keyword['evidence'] = image_src.replace('data:image/png;base64,', '')
 
     def message(self, message: MessageAttributes):
         """Called when framework's internal messages are emitted.
@@ -193,12 +184,15 @@ class Listener:
 
         With library listeners called when the library goes out of scope.
         """
-        # if Config.test_type() == "ROBOT":
-        #     Report.robot(self.report)
-        #     testExecutionId = Xray.importExecutionRobot()
-        #     # self._send_evidence(self.report, testExecutionId['issueId'])
-        # elif Config.test_type() == "CUCUMBER":
         Report.cucumber(self.report)
-        Xray.importExecutionCucumber()
-        # else:
-        #     print('Set the TEST_TYPE in .env!')
+        testExecutionId = Xray.importExecutionCucumber()
+        self._send_evidence(self.report, testExecutionId['id'])
+
+    def _send_evidence(self, report, testExecutionId):
+        for suite in report:
+            for test in suite['tests']:
+                for kw in test['keywords']:
+                    if kw['evidence'] != "":
+                        id = Xray.getTestRun(test['issueId'], testExecutionId)
+                        Xray.addEvidenceToTestRun(id, 'Evidence_{}.png'.format(test['xraytest']), "image/png", kw['evidence'])
+                        print('- {}, evidence submitted successfully!'.format(test['originalname']))
