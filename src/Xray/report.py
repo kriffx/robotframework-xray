@@ -1,7 +1,6 @@
 import json
-from ntpath import join
+# import config
 from .config import Config
-import xml.etree.ElementTree as ET
 
 class Report:
     def cucumber(report_json):
@@ -37,27 +36,46 @@ class Report:
                         "line": test.get('lineno'),
                     })
 
-                screenshots = []
                 for step_index, step in enumerate(test.get('keywords')):
-                    if (step.get('evidence') != ""):
-                        screenshots.append({"mime_type": "image/png",  "data": step.get('evidence')})
-                   
                     if step.get('kwname').split()[0] in ['Given', 'When', 'Then', 'And', 'But', '*']:
-                        cucumber[suite_index]['elements'][test_index]['steps'].append({
-                            "embeddings": screenshots,
-                            "keyword": step.get('kwname').split()[0],
-                            "name": step.get('kwname').replace(step.get('kwname').split()[0], '').strip(),
-                            "line": step.get('lineno'),
-                            "match": {
-                                "arguments": [],
-                                "location": "{}:{}".format(step.get('source'), step.get('lineno'))
-                            },
-                            "result": {
-                                "status": ("passed" if step.get('status').lower() == "pass" else ("failed" if step.get('status').lower() == "fail" else "skipped")),
-                                "duration": step.get('elapsedtime'),
-                            }
-                        })
-                        screenshots = []
+                        if step.get('evidence') != "":
+                            cucumber[suite_index]['elements'][test_index]['steps'].append({
+                                "embeddings": [
+                                    {
+                                        "mime_type": "image/png",
+                                        "data": step.get('evidence'),
+                                    }
+                                ],
+                                "keyword": step.get('kwname').split()[0],
+                                "name": step.get('kwname').replace(step.get('kwname').split()[0], '').strip(),
+                                "line": step.get('lineno'),
+                                "match": {
+                                    "arguments": [],
+                                    "location": "{}:{}".format(step.get('source'), step.get('lineno'))
+                                },
+                                "result": {
+                                    "status": ("passed" if step.get('status').lower() == "pass" else ("failed" if step.get('status').lower() == "fail" else "skipped")),
+                                    "duration": step.get('elapsedtime'),
+                                }
+                            })
+                        else:
+                            cucumber[suite_index]['elements'][test_index]['steps'].append({
+                                "embeddings": [],
+                                "keyword": step.get('kwname').split()[0],
+                                "name": step.get('kwname').replace(step.get('kwname').split()[0], '').strip(),
+                                "line": step.get('lineno'),
+                                "match": {
+                                    "arguments": [],
+                                    "location": "{}:{}".format(step.get('source'), step.get('lineno'))
+                                },
+                                "result": {
+                                    "status": ("passed" if step.get('status').lower() == "pass" else ("failed" if step.get('status').lower() == "fail" else "skipped")),
+                                    "duration": step.get('elapsedtime'),
+                                }
+                            })
 
         with open(Config.cucumber_path() + '/report.json', 'w') as report_file:
             json.dump(report_json, report_file, indent=4)
+
+        with open(Config.cucumber_path() + '/cucumber.json', 'w') as report_file:
+            json.dump(cucumber, report_file, indent=4)

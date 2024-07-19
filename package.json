@@ -5,6 +5,6 @@
     "uninstall": "pip uninstall -r uninstall.txt -y",
     "install": "pip install -r requirements-dev.txt",
     "build": "npm run freeze && npm run uninstall && npm run install && python setup.py install",
-    "publish": "python3 -m pip install build && python3 -m build --wheel && python3 -m build --sdist && twine upload dist/*"
+    "publish": "python -m pip install build && python -m build --wheel && python -m build --sdist && twine upload dist/*"
   }
 }
