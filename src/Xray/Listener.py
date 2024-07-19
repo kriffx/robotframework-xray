@@ -71,11 +71,14 @@ class Listener:
             "video": '',
         })
 
+        selectedTag = ''
         for tag in attributes.get('tags'):
             if Config.project_key() in tag:
                 test = self.report[self.suite_index]['tests'][self.test_index]
                 test['xraytest'] = tag
-                test['issueId'] = Xray.getTest(tag)
+                selectedTag = tag
+        
+        test['issueId'] = Xray.getTest(selectedTag)
 
         self.recorder.start_recording("{}.mp4".format(attributes.get('id')), 10)
 
