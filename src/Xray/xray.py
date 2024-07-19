@@ -24,7 +24,6 @@ class Xray:
             print('Authentication error: ', resp.status_code)
 
     def createTestExecution():
-        print("createTestExecution")
         PROJECT_KEY = Config.project_key()
         XRAY_API = Config.xray_api()
         test_execution_date = datetime.today().strftime('%Y-%m-%d %H:%M:%S')
@@ -72,7 +71,6 @@ class Xray:
             print('Error create test execution: ', resp.json())
 
     def getTest(testKey: str):
-        print("getTest")
         XRAY_API = Config.xray_api()
 
         json_data = f'''
@@ -106,7 +104,6 @@ class Xray:
             print('Error getting test ID ' + resp.json())
 
     def getTestRun(testIssueId: str, testExecutionIssueId: str):
-        print("getTestRun")
         print(testIssueId, testExecutionIssueId)
         XRAY_API = Config.xray_api()
 
@@ -132,8 +129,6 @@ class Xray:
             },
         )
 
-        print(resp.json())
-
         if resp.status_code == 200:
             print(resp)
             print(resp.json())
@@ -143,7 +138,6 @@ class Xray:
             print('Error getting run ID')
 
     def createTestExecution():
-        print("createTestExecution")
         PROJECT_KEY = Config.project_key()
         XRAY_API = Config.xray_api()
         test_execution_date = datetime.today().strftime('%Y-%m-%d %H:%M:%S')
@@ -235,7 +229,6 @@ class Xray:
             print('Successfuly send evidence')
 
     def importExecutionCucumber():
-        print("importExecutionCucumber")
         PROJECT_KEY = Config.project_key()
         XRAY_API = Config.xray_api()
         # testExecKey = Xray.createTestExecution()
@@ -252,12 +245,7 @@ class Xray:
                 'Authorization': Xray.authentication()
             }
         )
-
-        # resp = json.dumps({
-        #     'issueId': testExecKey['issueId'],
-        #     'key': report.json().get('key')
-        # })
-
+        
         if report.status_code == 200:
             print(report.json())
             return report.json()

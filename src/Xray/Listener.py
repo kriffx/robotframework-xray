@@ -1,5 +1,5 @@
-import base64
-# import attributes, config, report, xray, base64
+import os, base64, pyscreenrec
+# import attributes, config, report, xray
 from .attributes import *
 from .config import Config
 from .report import Report
@@ -21,6 +21,7 @@ class Listener:
         self.suite_index = 0
         self.test_index = 0
         self.keyword_index = 0
+        self.recorder = pyscreenrec.ScreenRecorder()
 
     def start_suite(self, name: str, attributes: StartSuiteAttributes):
         """Called when a suite starts."""
@@ -76,6 +77,8 @@ class Listener:
                 test['xraytest'] = tag
                 test['issueId'] = Xray.getTest(tag)
 
+        self.recorder.start_recording("{}.mp4".format(attributes.get('id')), 10)
+
     def end_test(self, name: str, attributes: EndTestAttributes):
         """Called when a test or task ends."""
         test = self.report[self.suite_index]['tests'][self.test_index]
@@ -83,6 +86,15 @@ class Listener:
         test['elapsedtime'] = attributes.get('elapsedtime')
         test['status'] = attributes.get('status')
         test['message'] = attributes.get('message')
+
+        self.recorder.stop_recording()
+
+        recording = "{}.mp4".format(attributes.get('id'))
+        with open(recording, 'rb') as video_file:
+            test['video'] = base64.b64encode(video_file.read()).decode('utf-8')
+
+        if os.path.isfile(recording):
+            os.remove(recording)
         
         self.test_index += 1
         self.keyword_index = 0
@@ -140,7 +152,6 @@ class Listener:
                     b64_string = base64.b64encode(img_file.read())
                     keyword = self.report[self.suite_index]['tests'][self.test_index]['keywords'][self.keyword_index]
                     keyword['evidence'] = '{}'.format(b64_string.decode('utf-8'))
-                    # keyword['evidence'] = '{}{}'.format('data:image/png;base64,', b64_string.decode('utf-8'))
             else:
                 keyword = self.report[self.suite_index]['tests'][self.test_index]['keywords'][self.keyword_index]
                 keyword['evidence'] = image_src.replace('data:image/png;base64,', '')
@@ -188,11 +199,9 @@ class Listener:
         testExecutionId = Xray.importExecutionCucumber()
         self._send_evidence(self.report, testExecutionId['id'])
 
-    def _send_evidence(self, report, testExecutionId):
+    def _send_evidence(self, report, testExecutionId):        
         for suite in report:
             for test in suite['tests']:
-                for kw in test['keywords']:
-                    if kw['evidence'] != "":
-                        id = Xray.getTestRun(test['issueId'], testExecutionId)
-                        Xray.addEvidenceToTestRun(id, 'Evidence_{}.png'.format(test['xraytest']), "image/png", kw['evidence'])
-                        print('- {}, evidence submitted successfully!'.format(test['originalname']))
+                id = Xray.getTestRun(test['issueId'], testExecutionId)
+                Xray.addEvidenceToTestRun(id, 'Evidence_{}.mp4'.format(test['xraytest']), "video/mp4", test['video'])
+                print('- {}, evidence submitted successfully!'.format(test['originalname']))

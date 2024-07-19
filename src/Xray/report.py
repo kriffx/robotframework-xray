@@ -1,7 +1,6 @@
-import platform, json, config
-from ntpath import join
-# from .config import Config
-import xml.etree.ElementTree as ET
+import json
+# import config
+from .config import Config
 
 class Report:
     def cucumber(report_json):
@@ -39,7 +38,7 @@ class Report:
 
                 for step_index, step in enumerate(test.get('keywords')):
                     if step.get('kwname').split()[0] in ['Given', 'When', 'Then', 'And', 'But', '*']:
-                        if (step.get('evidence') != ""):
+                        if step.get('evidence') != "":
                             cucumber[suite_index]['elements'][test_index]['steps'].append({
                                 "embeddings": [
                                     {
@@ -75,8 +74,8 @@ class Report:
                                 }
                             })
 
-        with open(config.Config.cucumber_path() + '/report.json', 'w') as report_file:
+        with open(Config.cucumber_path() + '/report.json', 'w') as report_file:
             json.dump(report_json, report_file, indent=4)
 
-        with open(config.Config.cucumber_path() + '/cucumber.json', 'w') as report_file:
+        with open(Config.cucumber_path() + '/cucumber.json', 'w') as report_file:
             json.dump(cucumber, report_file, indent=4)
