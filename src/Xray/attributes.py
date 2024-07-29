@@ -138,3 +138,15 @@ class VariablesAttributes(TypedDict):
     args: 'list[str]'
     source: str
     importer: 'str | None'
+
+if __name__ == '__main__':
+    StartSuiteAttributes()
+    EndSuiteAttributes()
+    StartTestAttributes()
+    EndTestAttributes()
+    StartKeywordAttributes()
+    EndKeywordAttributes()
+    MessageAttributes()
+    LibraryAttributes()
+    ResourceAttributes()
+    VariablesAttributes()

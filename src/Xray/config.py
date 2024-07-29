@@ -7,11 +7,14 @@ class Config:
         load_dotenv(join(os.path.abspath(os.curdir), '.env'))
         return os.getenv(value)
     
+    def debug() -> bool:
+        try:
+            return os.getenv('XRAY_DEBUG', Config.get('XRAY_DEBUG')).lower().capitalize() == "True"
+        except:
+            return False
+    
     def project_key():
         return os.getenv('PROJECT_KEY', Config.get('PROJECT_KEY'))
-    
-    def test_type():
-        return os.getenv('TEST_TYPE', Config.get('TEST_TYPE'))
     
     def xray_api():
         return os.getenv('XRAY_API', Config.get('XRAY_API'))
