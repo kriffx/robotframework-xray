@@ -16,4 +16,4 @@ Search on Google 3
     [Tags]    XSP-65    example1
     [Setup]    Given Open chrome browser
     [Teardown]    And Close All Browsers
-    When Search in Google    Microsoft
+    When Search in Google    Microsoft0
