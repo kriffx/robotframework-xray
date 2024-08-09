@@ -47,3 +47,18 @@ Below is a simple example test case for testing login to some system.
 Usage
 -----
 
+.. code:: robotframework
+
+    *** Settings ***
+    Library           Xray
+
+It is necessary to set the following parameters in the system variables or in the .env file:
+
+XRAY_DEBUG = false # true/false
+PROJECT_KEY = EXE # Project Key
+XRAY_API = https://xray.cloud.getxray.app/api/v2
+XRAY_CLIENT_ID = F55438AAACD34B4A921DAA0010957CA0
+XRAY_CLIENT_SECRET = 57e5bb417c10d4ee152d77a424a2511e3866ea952bccced3b05c2b04ffa67eff
+CUCUMBER_PATH = /projects/
+
+In Jira create an Xray Test and set the TEST-TYPE to Cucumber.
