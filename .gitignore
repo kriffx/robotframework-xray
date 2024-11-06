@@ -113,11 +113,11 @@ results/
 info.json
 *.webm
 *.png
-cucumber.json
+Report_*.json
+Cucumber_*.json
 log.html
 output.xml
 report.html
-report.json
 report.xml
 geckodriver-*.log
 interactive_console_output.xml

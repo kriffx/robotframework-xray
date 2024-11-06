@@ -14,16 +14,31 @@ class Config:
             return False
     
     def project_key():
-        return os.getenv('PROJECT_KEY', Config.get('PROJECT_KEY'))
+        try:
+            return os.getenv('PROJECT_KEY', Config.get('PROJECT_KEY'))
+        except Exception as error:
+            print("A propriedade PROJECT_KEY não encontra-se nas variaveis!")
     
     def xray_api():
-        return os.getenv('XRAY_API', Config.get('XRAY_API'))
+        try:
+            return os.getenv('XRAY_API', Config.get('XRAY_API'))
+        except Exception as error:
+            print("A propriedade XRAY_API não encontra-se nas variaveis!")
     
     def xray_client_id():
-        return os.getenv('XRAY_CLIENT_ID', Config.get('XRAY_CLIENT_ID'))
+        try:
+            return os.getenv('XRAY_CLIENT_ID', Config.get('XRAY_CLIENT_ID'))
+        except Exception as error:
+            print("A propriedade XRAY_CLIENT_ID não encontra-se nas variaveis!")
     
     def xray_client_secret():
-        return os.getenv('XRAY_CLIENT_SECRET', Config.get('XRAY_CLIENT_SECRET'))
+        try:
+            return os.getenv('XRAY_CLIENT_SECRET', Config.get('XRAY_CLIENT_SECRET'))
+        except Exception as error:
+            print("A propriedade XRAY_CLIENT_SECRET não encontra-se nas variaveis!")
     
     def cucumber_path():
-        return os.getenv('CUCUMBER_PATH', Config.get('CUCUMBER_PATH'))
+        try:
+            return os.getenv('CUCUMBER_PATH', Config.get('CUCUMBER_PATH'))
+        except Exception as error:
+            print("A propriedade CUCUMBER_PATH não encontra-se nas variaveis!")
