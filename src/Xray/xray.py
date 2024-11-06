@@ -15,9 +15,9 @@ class Xray:
 
     def getTestPlan(self, key: str):
         try:
-            print("\n------------------------------------------------------------------------------")
-            print("A função getTestPlan está sendo executada!")
             if self.config.debug():
+                print("\n------------------------------------------------------------------------------")
+                print("A função getTestPlan está sendo executada!")
                 print("A função recebeu key {}".format(key))
             
             json_data = f'''
@@ -48,7 +48,7 @@ class Xray:
             else:
                 if self.config.debug():
                     print(json.dumps(resp.json(), indent=4))
-                print("------------------------------------------------------------------------------")
+                    print("------------------------------------------------------------------------------")
                 return resp.json().get('data').get('getTestPlans').get('results')[0].get('issueId')
         except Exception as error:
             print("Ocorreu um erro na classe Xray na função getTestPlan com a seguinte mensagem:")
@@ -57,9 +57,9 @@ class Xray:
         
     def addTestExecutionsToTestPlan(self, issueId: str, testExecIssueId: str):
         try:
-            print("\n------------------------------------------------------------------------------")
-            print("A função addTestExecutionsToTestPlan está sendo executada!")
             if self.config.debug():
+                print("\n------------------------------------------------------------------------------")
+                print("A função addTestExecutionsToTestPlan está sendo executada!")
                 print("A função recebeu issueId {} e testExecIssueId {}".format(issueId, testExecIssueId))
 
             json_data = f'''
@@ -92,23 +92,23 @@ class Xray:
             else:
                 if self.config.debug():
                     print(json.dumps(resp.json(), indent=4))
-                print("------------------------------------------------------------------------------")
+                    print("------------------------------------------------------------------------------")
         except Exception as error:
             print("Ocorreu um erro na classe Xray na função addTestExecutionsToTestPlan com a seguinte mensagem:")
             print(error)
             print("------------------------------------------------------------------------------")
 
-    def importExecutionCucumber(self, report_names, key: str = None):
+    def importExecutionCucumber(self, cucumber_name, key: str = None):
         try:
-            print("A importação dos resultados do testes estão a ser enviados.")
-            print("Aguarde um momento...")
-            print("------------------------------------------------------------------------------")
-            print("A função importExecutionCucumber está sendo executada!")
             if self.config.debug():
+                print("\nA importação dos resultados do testes estão a ser enviados.")
+                print("Aguarde um momento...")
+                print("------------------------------------------------------------------------------")
+                print("A função importExecutionCucumber está sendo executada!")
                 print("A função recebeu key {}".format(key))
 
             resp = requests.post(f'{self.config.xray_api()}/import/execution/cucumber', 
-                data = open(self.config.cucumber_path() + f'/{report_names[1]}.json', 'rb'),
+                data = open(self.config.cucumber_path() + f'/{cucumber_name}.json', 'rb'),
                 params = { 
                     'projectKey': self.config.project_key(),
                 },
@@ -123,7 +123,7 @@ class Xray:
                 Xray.addTestExecutionsToTestPlan(self, str(issueId), str(resp.json().get('id')))
             
             if resp.status_code == 200:
-                print("O arquivo '{}' foi gerado!".format(join(self.config.cucumber_path(), f'{report_names[1]}.json')))
+                print("\nO arquivo '{}' foi gerado!".format(join(self.config.cucumber_path(), f'{cucumber_name}.json')))
                 if self.config.debug():
                     print(json.dumps(resp.json(), indent=4))
                 splitInfo = resp.json().get('self').split('/')

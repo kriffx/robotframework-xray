@@ -18,6 +18,12 @@ class Config:
             return os.getenv('PROJECT_KEY', Config.get('PROJECT_KEY'))
         except Exception as error:
             print("A propriedade PROJECT_KEY não encontra-se nas variaveis!")
+
+    def test_plan():
+        try:
+            return os.getenv('TEST_PLAN', Config.get('TEST_PLAN'))
+        except Exception as error:
+            print("A propriedade TEST_PLAN não encontra-se nas variaveis!")
     
     def xray_api():
         try:

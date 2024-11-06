@@ -1,5 +1,8 @@
 import json
 from robot.libraries.BuiltIn import BuiltIn
+from dateutil import parser
+from datetime import datetime
+from bs4 import BeautifulSoup
 
 try:
     import config as Config, report as Report, xray as Xray
@@ -18,10 +21,11 @@ class ListenerV2:
         self.execution = []
         self.suite_index = 0
         self.test_index = 0
-        self.keyword_index = 0
+        self.starttime = 0
         self.config = Config.Config or Config
         self.report = Report.Report or Report
         self.xray = Xray.Xray or Xray
+        self.steps = []
 
     def start_suite(self, name: str, attributes):
         """Called when a suite starts."""
@@ -30,15 +34,14 @@ class ListenerV2:
             print(json.dumps(attributes, indent=4))
 
         self.execution.append({
+            "keyword": "Feature",
+            "name": attributes.get('longname'),
+            "line": 1,
+            "description": attributes.get('doc'),
+            "tags": [],
             "id": attributes.get('id'),
-            "doc": attributes.get('doc') + ' Test Suite.',
-            "metadata": attributes.get('metadata'),
-            "starttime": attributes.get('starttime'),
-            "longname": attributes.get('longname'),
-            "tests": [],
-            "suites": attributes.get('suites'),
-            "totaltests": attributes.get('totaltests'),
-            "source": attributes.get('source'),
+            "uri": attributes.get('source'),
+            "elements": []
         })
 
     def end_suite(self, name: str, attributes):
@@ -47,16 +50,8 @@ class ListenerV2:
             print("\nend_suite")
             print(json.dumps(attributes, indent=4))
 
-        suite = self.execution[self.suite_index]
-        suite['endtime'] = attributes.get('endtime')
-        suite['elapsedtime'] = attributes.get('elapsedtime')
-        suite['status'] = attributes.get('status')
-        suite['message'] = attributes.get('message')
-        suite['statistics'] = attributes.get('statistics')
-
         self.suite_index = self.suite_index + 1
         self.test_index = 0
-        self.keyword_index = 0
 
     def start_test(self, name: str, attributes):
         """Called when a test or task starts."""
@@ -64,21 +59,15 @@ class ListenerV2:
             print("start_test")
             print(json.dumps(attributes, indent=4))
 
-        self.execution[self.suite_index]['tests'].append({
+        self.execution[self.suite_index]['elements'].append({
+            "keyword": "Scenario" if attributes.get('template') == "" else "Scenario Outline",
+            "name": attributes.get('originalname'),
+            "line": attributes.get('lineno'),
+            "description": attributes.get('doc'),
+            "tags": [],
             "id": attributes.get('id'),
-            "doc": attributes.get('doc'),
-            "tags": attributes.get('tags'),
-            "lineno": attributes.get('lineno'),
-            "starttime": attributes.get('starttime'),
-            "longname": attributes.get('longname'),
-            "source": attributes.get('source'),
-            "template": attributes.get('template'),
-            "originalname": attributes.get('originalname'),
-            "endtime": '',
-            "elapsedtime": 0,
-            "status": 'NOT SET',
-            "message": '',
-            "keywords": [],
+            "type": "scenario",
+            "steps": []
         })
     
     def end_test(self, name: str, attributes):
@@ -87,14 +76,24 @@ class ListenerV2:
             print("end_test")
             print(json.dumps(attributes, indent=4))
 
-        test = self.execution[self.suite_index]['tests'][self.test_index]
-        test['endtime'] = attributes.get('endtime')
-        test['elapsedtime'] = attributes.get('elapsedtime')
-        test['status'] = attributes.get('status')
-        test['message'] = attributes.get('message')
-        
-        self.test_index = self.test_index + 1
-        self.keyword_index = 0
+        for tag_index, tag in enumerate(attributes.get('tags')):
+            self.execution[self.suite_index]['elements'][self.test_index]['tags'].append({
+                "name": f"@{tag}",
+                "line": attributes.get('lineno'),
+            })
+
+        self.execution[self.suite_index]['elements'][self.test_index]['steps'] = self.steps
+        self.steps = []
+
+        test_plan = self.config.test_plan()
+        execution_date = datetime.today().strftime('%Y-%m-%d_%H-%M-%S')
+        cucumber_name = f'Cucumber_{test_plan}_{execution_date}'
+
+        with open(self.config.cucumber_path() + f'/{cucumber_name}.json', 'w') as report_file:
+            json.dump(self.execution, report_file, indent=4)
+
+        self.execution[self.suite_index]['elements'] = []
+        self.xray.importExecutionCucumber(self, cucumber_name, test_plan)
 
     def start_keyword(self, name: str, attributes):
         """Called when a keyword or a control structure like IF starts.
@@ -106,23 +105,22 @@ class ListenerV2:
             print("start_keyword")
             print(json.dumps(attributes, indent=4))
 
-        keyword = self.execution[self.suite_index]['tests'][self.test_index]
-        keyword['keywords'].append({
-            "doc": attributes.get('doc'),
-            "lineno": attributes.get('lineno'),
-            "type": attributes.get('type'),
-            "status": attributes.get('status'),
-            "starttime": attributes.get('starttime'),
-            "source": attributes.get('source'),
-            "kwname": attributes.get('kwname'),
-            "libname": attributes.get('libname'),
-            "args": attributes.get('args'),
-            "assign": attributes.get('assign'),
-            "tags": attributes.get('tags'),
-            "messages": [],
-            "endtime": '',
-            "elapsedtime": 0,
-        })
+        if attributes.get('kwname').split()[0].lower() in ['given', 'when', 'then', 'and', 'but', '*']:
+            self.starttime = attributes.get('starttime')
+            self.steps.append({
+                "embeddings": [],
+                "keyword": attributes.get('kwname').split()[0].capitalize(),
+                "name": attributes.get('kwname').replace(attributes.get('kwname').split()[0], '').strip(),
+                "line": attributes.get('lineno'),
+                "match": {
+                    "arguments": [],
+                    "location": f"{attributes.get('source')}:{attributes.get('lineno')}"
+                },
+                "result": {
+                    "status": attributes.get('status'),
+                    "duration": attributes.get('starttime')
+                }
+            })
 
     def end_keyword(self, name: str, attributes):
         """Called when a keyword or a control structure like IF ends.
@@ -133,13 +131,13 @@ class ListenerV2:
         if self.config.debug():
             print("end_keyword")
             print(json.dumps(attributes, indent=4))
-            
-        keyword = self.execution[self.suite_index]['tests'][self.test_index]['keywords'][self.keyword_index]
-        keyword['status'] = attributes.get('status')
-        keyword['endtime'] = attributes.get('endtime')
-        keyword['elapsedtime'] = attributes.get('elapsedtime')
 
-        self.keyword_index = self.keyword_index + 1
+        if attributes.get('kwname').split()[0].lower() in ['given', 'when', 'then', 'and', 'but', '*']:
+            date1 = parser.parse(self.starttime)
+            date2 = parser.parse(attributes.get('endtime'))
+            diff = date2 - date1
+            self.steps[-1]['result']['status'] = ("passed" if attributes.get('status').lower() == "pass" else ("failed" if attributes.get('status').lower() == "fail" else "skipped"))
+            self.steps[-1]['result']['duration'] = diff.microseconds*10000
 
     def log_message(self, message):
         """Called when a normal log message are emitted.
@@ -152,65 +150,13 @@ class ListenerV2:
             print("log_message")
             print(json.dumps(message, indent=4))
 
-        msg = self.execution[self.suite_index]['tests'][self.test_index]['keywords'][self.keyword_index]
-        msg['messages'].append({
-            "timestamp": message.get('timestamp'),
-            "message": message.get('message'),
-            "level": message.get('level'),
-            "html": message.get('html'),
-        })
+        if message.get('message').__contains__('<img'):
+            soup = BeautifulSoup(message.get('message'), 'html.parser')
+            image_src = soup.img.get('src')
 
-    def message(self, message):
-        """Called when framework's internal messages are emitted.
-
-        Only logged by the framework itself. These messages end up to the syslog
-        if it is enabled.
-        """
-        if self.config.debug():
-            print("message")
-            print(json.dumps(message, indent=4))
-
-    def library_import(self, name: str, attributes):
-        """Called after a library has been imported."""
-        if self.config.debug():
-            print("library_import")
-            print(json.dumps(attributes, indent=4))
-
-    def resource_import(self, name: str, attributes):
-        """Called after a resource file has been imported."""
-        if self.config.debug():
-            print("resource_import")
-            print(json.dumps(attributes, indent=4))
-
-    def variables_import(self, name: str, attributes):
-        """Called after a variable file has been imported."""
-        if self.config.debug():
-            print("variables_import")
-            print(json.dumps(attributes, indent=4))
-
-    def output_file(self, path: str):
-        """Called after the output file has been created.
-
-        At this point the file is guaranteed to be closed.
-        """
-
-    def log_file(self, path: str):
-        """Called after the log file has been created."""
-
-    def report_file(self, path: str):
-        """Called after the report file has been created."""
-
-    def xunit_file(self, path: str):
-        """Called after the xunit compatible output file has been created."""
-
-    def debug_file(self, path: str):
-        """Called after the debug file has been created."""
-
-    def close(self):
-        """Called when the whole execution ends.
-
-        With library listeners called when the library goes out of scope.
-        """
-        test_plan = BuiltIn().get_variable_value("${TESTPLAN}")
-        report_names = self.report.cucumber(self, self.execution, test_plan)
-        self.xray.importExecutionCucumber(self, report_names, test_plan)
+            if not image_src.__contains__('data:image/png;base64,'):                                
+                with open(join(BuiltIn().get_variable_value('${OUTPUT_DIR}'), image_src), 'rb') as img_file:
+                    b64_string = base64.b64encode(img_file.read())
+                    self.steps[-1]['embeddings'].append({ "mime_type": "image/png", "data": f"{b64_string.decode('utf-8')}" })
+            else:
+                self.steps[-1]['embeddings'].append({ "mime_type": "image/png", "data": f"{image_src.replace('data:image/png;base64,', '')}" })

@@ -55,10 +55,17 @@ Usage
 It is necessary to set the following parameters in the system variables or in the .env file:
 
 XRAY_DEBUG = false # true/false
-PROJECT_KEY = EXE # Project Key
+
+PROJECT_KEY = XSE # Project Key
+
+TEST_PLAN = XSE-58
+
 XRAY_API = https://xray.cloud.getxray.app/api/v2
-XRAY_CLIENT_ID = F55438AAACD34B4A921DAA0010957CA0
-XRAY_CLIENT_SECRET = 57e5bb417c10d4ee152d77a424a2511e3866ea952bccced3b05c2b04ffa67eff
-CUCUMBER_PATH = /projects/
+
+XRAY_CLIENT_ID = 52888E2E5516439A854E8CD0B3B012AB
+
+XRAY_CLIENT_SECRET = f5830cd0e9253ff57a636f094566245265ffa9a05d1074f0eb4b19de17361b20
+
+CUCUMBER_PATH = C:/Projetos/robotframework-xray
 
 In Jira create an Xray Test and set the TEST-TYPE to Cucumber.
