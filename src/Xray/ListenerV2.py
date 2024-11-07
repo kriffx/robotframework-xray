@@ -1,15 +1,14 @@
-import json
+import json, base64, re
 from robot.libraries.BuiltIn import BuiltIn
 from dateutil import parser
 from datetime import datetime
 from bs4 import BeautifulSoup
 
-try:
-    import config as Config, report as Report, xray as Xray
-except ImportError as e:
-    from .config import Config
-    from .report import Report
-    from .xray import Xray
+# try:
+# import config as Config, xray as Xray
+# except ImportError as e:
+from .config import Config
+from .xray import Xray
 
 class ListenerV2:
     """Optional base class for listeners using the listener API version 2."""
@@ -22,9 +21,8 @@ class ListenerV2:
         self.suite_index = 0
         self.test_index = 0
         self.starttime = 0
-        self.config = Config.Config or Config
-        self.report = Report.Report or Report
-        self.xray = Xray.Xray or Xray
+        self.config = Config
+        self.xray = Xray
         self.steps = []
 
     def start_suite(self, name: str, attributes):
@@ -149,14 +147,14 @@ class ListenerV2:
         if self.config.debug():
             print("log_message")
             print(json.dumps(message, indent=4))
+        
+        if message.get('level') == 'FAIL':
+            texto_bytes = message.get('message').encode('utf-8')
+            texto_base64 = base64.b64encode(texto_bytes)
+            self.steps[-1]['embeddings'].append({ "mime_type": "text/plain", "data": f"{texto_base64.decode('utf-8')}" })
 
-        if message.get('message').__contains__('<img'):
-            soup = BeautifulSoup(message.get('message'), 'html.parser')
-            image_src = soup.img.get('src')
-
-            if not image_src.__contains__('data:image/png;base64,'):                                
-                with open(join(BuiltIn().get_variable_value('${OUTPUT_DIR}'), image_src), 'rb') as img_file:
-                    b64_string = base64.b64encode(img_file.read())
-                    self.steps[-1]['embeddings'].append({ "mime_type": "image/png", "data": f"{b64_string.decode('utf-8')}" })
-            else:
-                self.steps[-1]['embeddings'].append({ "mime_type": "image/png", "data": f"{image_src.replace('data:image/png;base64,', '')}" })
+        if message.get('message').__contains__('data:image/png;base64,'):
+            match = re.search(r'src="([^"]+)"', message.get('message'))
+            if match:
+                base64_src = match.group(1)
+                self.steps[-1]['embeddings'].append({ "mime_type": "image/png", "data": f"{base64_src.replace('data:image/png;base64,', '')}" })

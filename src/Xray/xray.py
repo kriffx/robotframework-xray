@@ -11,14 +11,14 @@ class Xray:
             return 'Bearer ' + resp.json()
         else:
             print(resp.json())
-            print("Authentication error: {}".format(resp.status_code))
+            print(f"Authentication error: {resp.status_code}")
 
     def getTestPlan(self, key: str):
         try:
             if self.config.debug():
                 print("\n------------------------------------------------------------------------------")
-                print("A função getTestPlan está sendo executada!")
-                print("A função recebeu key {}".format(key))
+                print("The getTestPlan function is being executed!")
+                print(f"The function received key {key}")
             
             json_data = f'''
                 {{
@@ -42,8 +42,8 @@ class Xray:
             )
 
             if resp.status_code != 200:
-                print("Infelizmente ocorreu um erro ao obter o issueId do TestPlan")
-                print("Código de erro {}".format(resp.status_code))
+                print("Unfortunately an error occurred while getting the issueId from TestPlan")
+                print(f"Error code {resp.status_code}")
                 print("------------------------------------------------------------------------------")
             else:
                 if self.config.debug():
@@ -51,7 +51,7 @@ class Xray:
                     print("------------------------------------------------------------------------------")
                 return resp.json().get('data').get('getTestPlans').get('results')[0].get('issueId')
         except Exception as error:
-            print("Ocorreu um erro na classe Xray na função getTestPlan com a seguinte mensagem:")
+            print("An error occurred in the Xray class in the getTestPlan function with the following message:")
             print(error)
             print("------------------------------------------------------------------------------")
         
@@ -59,8 +59,8 @@ class Xray:
         try:
             if self.config.debug():
                 print("\n------------------------------------------------------------------------------")
-                print("A função addTestExecutionsToTestPlan está sendo executada!")
-                print("A função recebeu issueId {} e testExecIssueId {}".format(issueId, testExecIssueId))
+                print("The addTestExecutionsToTestPlan function is being executed!")
+                print(f"The function received issueId {issueId} and testExecIssueId {testExecIssueId}")
 
             json_data = f'''
                 mutation {{
@@ -86,26 +86,26 @@ class Xray:
             )
 
             if resp.status_code != 200:
-                print("Infelizmente ocorreu um erro ao adicionar os resultados ao Plano de Teste")
-                print("Código de erro {}".format(resp.status_code))
+                print("Unfortunately, an error occurred while adding the results to the Test Plan.")
+                print(f"Error code {resp.status_code}")
                 print("------------------------------------------------------------------------------")
             else:
                 if self.config.debug():
                     print(json.dumps(resp.json(), indent=4))
                     print("------------------------------------------------------------------------------")
         except Exception as error:
-            print("Ocorreu um erro na classe Xray na função addTestExecutionsToTestPlan com a seguinte mensagem:")
+            print("An error occurred in the Xray class in the addTestExecutionsToTestPlan function with the following message:")
             print(error)
             print("------------------------------------------------------------------------------")
 
     def importExecutionCucumber(self, cucumber_name, key: str = None):
         try:
             if self.config.debug():
-                print("\nA importação dos resultados do testes estão a ser enviados.")
-                print("Aguarde um momento...")
+                print("\nImport of test results are being sent.")
+                print("Please wait a moment...")
                 print("------------------------------------------------------------------------------")
-                print("A função importExecutionCucumber está sendo executada!")
-                print("A função recebeu key {}".format(key))
+                print("The importExecutionCucumber function is being executed!")
+                print(f"The function received key {key}")
 
             resp = requests.post(f'{self.config.xray_api()}/import/execution/cucumber', 
                 data = open(self.config.cucumber_path() + f'/{cucumber_name}.json', 'rb'),
@@ -123,19 +123,18 @@ class Xray:
                 Xray.addTestExecutionsToTestPlan(self, str(issueId), str(resp.json().get('id')))
             
             if resp.status_code == 200:
-                print("\nO arquivo '{}' foi gerado!".format(join(self.config.cucumber_path(), f'{cucumber_name}.json')))
+                print(f"\nFile '{join(self.config.cucumber_path(), f'{cucumber_name}.json')}' has been generated!")
                 if self.config.debug():
                     print(json.dumps(resp.json(), indent=4))
                 splitInfo = resp.json().get('self').split('/')
-                print("Resultados encontram-se em {}//{}/browse/{}".format(splitInfo[0], splitInfo[2], resp.json().get('key')))
+                print(f"Results can be found in {splitInfo[0]}//{splitInfo[2]}/browse/{resp.json().get('key')}")
                 print("------------------------------------------------------------------------------")
-                return resp.json().get('id')
             else:
-                print("Infelizmente ocorreu um erro no envio dos resultados")
-                print("Código de erro {}".format(resp.status_code))
+                print("Unfortunately there was an error sending the results")
+                print(f"Error code {resp.status_code}")
                 print(json.dumps(resp.json(), indent=4))
                 print("------------------------------------------------------------------------------")
         except Exception as error:
-            print("Ocorreu um erro na classe Xray na função importExecutionCucumber com a seguinte mensagem:")
+            print("An error occurred in the Xray class in the import Execution Cucumber function with the following message:")
             print(error)
             print("------------------------------------------------------------------------------")
