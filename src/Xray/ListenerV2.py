@@ -4,9 +4,7 @@ from dateutil import parser
 from datetime import datetime
 from bs4 import BeautifulSoup
 
-# try:
 # import config as Config, xray as Xray
-# except ImportError as e:
 from .config import Config
 from .xray import Xray
 
@@ -28,8 +26,14 @@ class ListenerV2:
     def start_suite(self, name: str, attributes):
         """Called when a suite starts."""
         if self.config.debug():
-            print("start_suite")
-            print(json.dumps(attributes, indent=4))
+            print("The following configurations have been loaded:")
+            print(f"PROJECT_KEY: {self.config.project_key()}")
+            print(f"TEST_PLAN: {self.config.test_plan()}")
+            print(f"CUCUMBER_PATH: {self.config.cucumber_path()}")
+            print(f"XRAY_API: {self.config.xray_api()}")
+            print(f"XRAY_CLIENT_ID: {self.config.xray_client_id()}")
+            print(f"XRAY_CLIENT_SECRET: {self.config.xray_client_secret()}")
+            print("==============================================================================")
 
         self.execution.append({
             "keyword": "Feature",
@@ -44,19 +48,11 @@ class ListenerV2:
 
     def end_suite(self, name: str, attributes):
         """Called when a suite end."""
-        if self.config.debug():
-            print("\nend_suite")
-            print(json.dumps(attributes, indent=4))
-
         self.suite_index = self.suite_index + 1
         self.test_index = 0
 
     def start_test(self, name: str, attributes):
         """Called when a test or task starts."""
-        if self.config.debug():
-            print("start_test")
-            print(json.dumps(attributes, indent=4))
-
         self.execution[self.suite_index]['elements'].append({
             "keyword": "Scenario" if attributes.get('template') == "" else "Scenario Outline",
             "name": attributes.get('originalname'),
@@ -70,10 +66,6 @@ class ListenerV2:
     
     def end_test(self, name: str, attributes):
         """Called when a test or task ends."""
-        if self.config.debug():
-            print("end_test")
-            print(json.dumps(attributes, indent=4))
-
         for tag_index, tag in enumerate(attributes.get('tags')):
             self.execution[self.suite_index]['elements'][self.test_index]['tags'].append({
                 "name": f"@{tag}",
@@ -99,10 +91,6 @@ class ListenerV2:
         The type of the started item is in ``attributes['type']``. Control
         structures can contain extra attributes that are only relevant to them.
         """
-        if self.config.debug():
-            print("start_keyword")
-            print(json.dumps(attributes, indent=4))
-
         if attributes.get('kwname').split()[0].lower() in ['given', 'when', 'then', 'and', 'but', '*']:
             self.starttime = attributes.get('starttime')
             self.steps.append({
@@ -126,10 +114,6 @@ class ListenerV2:
         The type of the started item is in ``attributes['type']``. Control
         structures can contain extra attributes that are only relevant to them.
         """
-        if self.config.debug():
-            print("end_keyword")
-            print(json.dumps(attributes, indent=4))
-
         if attributes.get('kwname').split()[0].lower() in ['given', 'when', 'then', 'and', 'but', '*']:
             date1 = parser.parse(self.starttime)
             date2 = parser.parse(attributes.get('endtime'))
@@ -143,11 +127,7 @@ class ListenerV2:
         The messages are typically logged by keywords, but also the framework
         itself logs some messages. These messages end up to output.xml and
         log.html.
-        """
-        if self.config.debug():
-            print("log_message")
-            print(json.dumps(message, indent=4))
-        
+        """        
         if message.get('level') == 'FAIL':
             texto_bytes = message.get('message').encode('utf-8')
             texto_base64 = base64.b64encode(texto_bytes)

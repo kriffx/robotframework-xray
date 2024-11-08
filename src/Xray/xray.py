@@ -4,25 +4,22 @@ from datetime import datetime
 
 class Xray:
     def authentication(self) -> str:
-        json_data = json.dumps({'client_id': self.config.xray_client_id(), 'client_secret': self.config.xray_client_secret()})
-        resp = requests.post(f'{self.config.xray_api()}/authenticate', data=json_data, headers={'Content-Type':'application/json'})
+        json_data = json.dumps({"client_id": self.config.xray_client_id(), "client_secret": self.config.xray_client_secret()})
+        resp = requests.post(f"{self.config.xray_api()}/authenticate", data=json_data, headers={"Content-Type":"application/json"})
             
         if resp.status_code == 200:
-            return 'Bearer ' + resp.json()
+            return f"Bearer {resp.json()}"
         else:
-            print(resp.json())
-            print(f"Authentication error: {resp.status_code}")
+            print("------------------------------------------------------------------------------")
+            print("An authentication error occurred, see more details:")
+            print(f"Status code: {resp.status_code}")
+            print(json.dumps(resp.json(), indent=4))
 
-    def getTestPlan(self, key: str):
-        try:
-            if self.config.debug():
-                print("\n------------------------------------------------------------------------------")
-                print("The getTestPlan function is being executed!")
-                print(f"The function received key {key}")
-            
+    def getTestPlan(self) -> str:
+        try:            
             json_data = f'''
                 {{
-                    getTestPlans(jql: "key = '{ key }'", limit: 1) {{
+                    getTestPlans(jql: "key = '{ self.config.test_plan() }'", limit: 1) {{
                         results {{
                             issueId
                         }}
@@ -42,25 +39,24 @@ class Xray:
             )
 
             if resp.status_code != 200:
-                print("Unfortunately an error occurred while getting the issueId from TestPlan")
-                print(f"Error code {resp.status_code}")
-                print("------------------------------------------------------------------------------")
+                print("Unfortunately an error occurred while getting the issueId")
+                print(f"Status code: {resp.status_code}")
+                print(json.dumps(resp.json(), indent=4))
             else:
                 if self.config.debug():
                     print(json.dumps(resp.json(), indent=4))
-                    print("------------------------------------------------------------------------------")
-                return resp.json().get('data').get('getTestPlans').get('results')[0].get('issueId')
+                return str(resp.json().get('data').get('getTestPlans').get('results')[0].get('issueId'))
         except Exception as error:
             print("An error occurred in the Xray class in the getTestPlan function with the following message:")
             print(error)
-            print("------------------------------------------------------------------------------")
         
     def addTestExecutionsToTestPlan(self, issueId: str, testExecIssueId: str):
         try:
             if self.config.debug():
-                print("\n------------------------------------------------------------------------------")
-                print("The addTestExecutionsToTestPlan function is being executed!")
-                print(f"The function received issueId {issueId} and testExecIssueId {testExecIssueId}")
+                print("------------------------------------------------------------------------------")
+                print("The addTestExecutionsToTestPlan function obtained the following parameters:")
+                print(f"issueId: {issueId}")
+                print(f"testExecIssueId: {testExecIssueId}")
 
             json_data = f'''
                 mutation {{
@@ -88,6 +84,7 @@ class Xray:
             if resp.status_code != 200:
                 print("Unfortunately, an error occurred while adding the results to the Test Plan.")
                 print(f"Error code {resp.status_code}")
+                print(json.dumps(resp.json(), indent=4))
                 print("------------------------------------------------------------------------------")
             else:
                 if self.config.debug():
@@ -101,11 +98,10 @@ class Xray:
     def importExecutionCucumber(self, cucumber_name, key: str = None):
         try:
             if self.config.debug():
-                print("\nImport of test results are being sent.")
-                print("Please wait a moment...")
-                print("------------------------------------------------------------------------------")
-                print("The importExecutionCucumber function is being executed!")
-                print(f"The function received key {key}")
+                print("\n------------------------------------------------------------------------------")
+                print("The importExecutionCucumber function obtained the following parameters:")
+                print(f"cucumber_name: {cucumber_name}")
+                print(f"key: {key}")
 
             resp = requests.post(f'{self.config.xray_api()}/import/execution/cucumber', 
                 data = open(self.config.cucumber_path() + f'/{cucumber_name}.json', 'rb'),
@@ -118,16 +114,20 @@ class Xray:
                 }
             )
 
-            if key != None:
-                issueId = Xray.getTestPlan(self, key)
-                Xray.addTestExecutionsToTestPlan(self, str(issueId), str(resp.json().get('id')))
+            if self.config.debug():
+                print(json.dumps(resp.json(), indent=4))
+                print("------------------------------------------------------------------------------")
+
+            issueId = Xray.getTestPlan(self)
+            Xray.addTestExecutionsToTestPlan(self, issueId, str(resp.json().get('id')))
             
             if resp.status_code == 200:
-                print(f"\nFile '{join(self.config.cucumber_path(), f'{cucumber_name}.json')}' has been generated!")
-                if self.config.debug():
-                    print(json.dumps(resp.json(), indent=4))
+                print(f"File '{join(self.config.cucumber_path(), f'{cucumber_name}.json')}' has been generated!")
+                print("------------------------------------------------------------------------------")
                 splitInfo = resp.json().get('self').split('/')
                 print(f"Results can be found in {splitInfo[0]}//{splitInfo[2]}/browse/{resp.json().get('key')}")
+                if self.config.debug():
+                    print(json.dumps(resp.json(), indent=4))
                 print("------------------------------------------------------------------------------")
             else:
                 print("Unfortunately there was an error sending the results")

@@ -26,6 +26,10 @@ Run test with error
     Then I do not exist
     And I close the browser
 
+Fast test
+    [Tags]    XSE-177
+    Log to Console    test
+
 *** Keywords ***
 I search on PyPi
     Input Text    locator=id:search    text=robotframework-xray    clear=True
