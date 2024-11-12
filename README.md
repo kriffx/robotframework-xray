@@ -12,7 +12,7 @@ Obviamente é necessário possuir a versão do Python >= 3.8 e <= 3.12, junto co
 
 ### Configuração
 
-> [!Importante]
+> [!NOTE]
 > Necessário configurar na variaveis de ambiente ou no arquivo .env de seu projeto seguintes chaves:
 
 ```
