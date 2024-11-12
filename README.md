@@ -8,7 +8,7 @@ Biblioteca Xray, envie seu relatorio de execução para Jira de forma simples e 
 pip install robotframework-xray
 ```
 
-Obviamente é necessário possuir a versão do Python >= 3.8 e <= 3.12, junto com o gerenciador de pacotes pip do Python.
+É necessário possuir a versão do Python >= 3.8 & <= 3.12, junto com o gerenciador de pacotes pip.
 
 ### Configuração
 
