@@ -1,22 +1,22 @@
 # Robot Framework Xray
 
-Biblioteca Xray, envie seu relatorio de execução para Jira de forma simples e descomplicada.
+Xray Library, send your execution report to Jira in a simple and straightforward way.
 
-## Instalação
+## Installation
 
 ```bash
 pip install robotframework-xray
 ```
 
-É necessário possuir a versão do Python >= 3.8 & <= 3.12, junto com o gerenciador de pacotes pip.
+You must have Python version >= 3.8 & <= 3.12, along with the pip package manager.
 
-### Configuração no projeto
+### Project setup
 
 > [!NOTE]
-> Necessário configurar na variaveis de ambiente ou no arquivo .env de seu projeto seguintes chaves:
+> You need to configure the following keys in the environment variables or in the .env file of your project:
 
 ```
-# Valores são meramente ilustrativos
+# Values ​​are merely illustrative
 XRAY_DEBUG = false
 PROJECT_KEY = XSE
 TEST_PLAN = XSE-135
@@ -26,13 +26,13 @@ XRAY_CLIENT_SECRET = f4730cd0e9253ff57a636d093176245265fft9a05d1074f0
 CUCUMBER_PATH = C:/Projetos/robotframework-xray
 ```
 
-### Configurações no Jira
+### Jira setup
 
-É necessário o uso de **_Test Plan_** e vincular seus **_Xray Test_** ao mesmo.
+You must use **_Test Plan_** and link your **_Xray Test_** to it.
 
-Lembrando que seu **_Xray Test_** no **_Jira_** precisa estar configurado com seguinte **_Test Type_** como **_Cucumber_**.
+Remember that your **_Xray Test_** in **_Jira_** must be configured with the following **_Test Type_** as **_Cucumber_**.
 
-## Exemplo de uso
+## Usage example
 
 ```robotframework
 *** Settings ***
@@ -48,6 +48,6 @@ Search for the Robot Framework Xray library in the PyPi repository
     And I close the browser
 ```
 
-Para mais detalhes, acesse a pasta [**_tests_**](https://github.com/kriffx/robotframework-xray/tree/main/tests) da biblioteca e veja alguns exemplos de implementação.
+For more details, access the [**_tests_**](https://github.com/kriffx/robotframework-xray/tree/main/tests) folder of the library and see some implementation examples.
 
-Apenas escritas com palavras **_Given_**, **_When_**, **_Then_**, **_And_** e **_But_** serão exibidas no relatório do Jira e as demais serão ignoradas,
+Only the words **_Given_**, **_When_**, **_Then_**, **_And_** and **_But_** will be displayed in the Jira report and the others will be ignored,
