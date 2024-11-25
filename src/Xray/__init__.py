@@ -1,6 +1,6 @@
 from .ListenerV2 import ListenerV2
 
-__version__ = "5.1.1"
+__version__ = "5.2.0"
 
 class Xray():
     ROBOT_LIBRARY_LISTENER = ListenerV2()

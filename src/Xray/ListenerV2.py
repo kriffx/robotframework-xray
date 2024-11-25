@@ -22,6 +22,11 @@ class ListenerV2:
         self.config = Config
         self.xray = Xray
         self.steps = []
+        self.template = ""
+        self.element_index = 0
+        self.id = ""
+        self.name = ""
+        self.tags = []
 
     def start_suite(self, name: str, attributes):
         """Called when a suite starts."""
@@ -48,41 +53,49 @@ class ListenerV2:
 
     def end_suite(self, name: str, attributes):
         """Called when a suite end."""
-        self.suite_index = self.suite_index + 1
-        self.test_index = 0
+        self.execution = []
 
     def start_test(self, name: str, attributes):
         """Called when a test or task starts."""
-        self.execution[self.suite_index]['elements'].append({
-            "keyword": "Scenario" if attributes.get('template') == "" else "Scenario Outline",
-            "name": attributes.get('originalname'),
-            "line": attributes.get('lineno'),
-            "description": attributes.get('doc'),
-            "tags": [],
-            "id": attributes.get('id'),
-            "type": "scenario",
-            "steps": []
-        })
-    
-    def end_test(self, name: str, attributes):
-        """Called when a test or task ends."""
+        if attributes.get('template'):
+            self.id = attributes.get('id')
+            self.name = attributes.get('template')
+            self.template = attributes.get('template')
+        else:
+            self.execution[self.suite_index]['elements'].append({
+                "keyword": "Scenario",
+                "name": attributes.get('originalname'),
+                "line": attributes.get('lineno'),
+                "description": attributes.get('doc'),
+                "tags": [],
+                "id": attributes.get('id'),
+                "type": "scenario",
+                "steps": [],
+            })
+        
         for tag_index, tag in enumerate(attributes.get('tags')):
-            self.execution[self.suite_index]['elements'][self.test_index]['tags'].append({
+            self.tags.append({
                 "name": f"@{tag}",
                 "line": attributes.get('lineno'),
             })
-
-        self.execution[self.suite_index]['elements'][self.test_index]['steps'] = self.steps
-        self.steps = []
+    
+    def end_test(self, name: str, attributes):
+        """Called when a test or task ends."""
+        if self.template == "":
+            self.execution[self.suite_index]['elements'][self.element_index]['steps'] = self.steps
 
         test_plan = self.config.test_plan()
-        execution_date = datetime.today().strftime('%Y-%m-%d_%H-%M-%S')
+        execution_date = datetime.today().strftime('%Y-%m-%d_%H-%M-%S_%f')
         cucumber_name = f'Cucumber_{test_plan}_{execution_date}'
 
         with open(self.config.cucumber_path() + f'/{cucumber_name}.json', 'w') as report_file:
             json.dump(self.execution, report_file, indent=4)
 
         self.execution[self.suite_index]['elements'] = []
+        self.tags = []
+        self.steps = []
+        self.element_index = 0
+        self.template = ""
         self.xray.importExecutionCucumber(self, cucumber_name, test_plan)
 
     def start_keyword(self, name: str, attributes):
@@ -91,6 +104,19 @@ class ListenerV2:
         The type of the started item is in ``attributes['type']``. Control
         structures can contain extra attributes that are only relevant to them.
         """
+        if attributes.get('kwname') == self.template:
+            self.execution[self.suite_index]['elements'].append({
+                "keyword": "Scenario Outline",
+                "name": self.name,
+                "line": attributes.get('lineno'),
+                "tags": self.tags,
+                "id": self.id,
+                "type": "scenario",
+                "steps": [],
+            })
+        else:
+            self.execution[self.suite_index]['elements'][self.test_index]['tags'] = self.tags
+
         if attributes.get('kwname').split()[0].lower() in ['given', 'when', 'then', 'and', 'but', '*']:
             self.starttime = attributes.get('starttime')
             self.steps.append({
@@ -98,10 +124,6 @@ class ListenerV2:
                 "keyword": attributes.get('kwname').split()[0].capitalize(),
                 "name": attributes.get('kwname').replace(attributes.get('kwname').split()[0], '').strip(),
                 "line": attributes.get('lineno'),
-                "match": {
-                    "arguments": [],
-                    "location": f"{attributes.get('source')}:{attributes.get('lineno')}"
-                },
                 "result": {
                     "status": attributes.get('status'),
                     "duration": attributes.get('starttime')
@@ -121,13 +143,18 @@ class ListenerV2:
             self.steps[-1]['result']['status'] = ("passed" if attributes.get('status').lower() == "pass" else ("failed" if attributes.get('status').lower() == "fail" else "skipped"))
             self.steps[-1]['result']['duration'] = diff.microseconds*10000
 
+        if attributes.get('kwname') == self.template:
+            self.execution[self.suite_index]['elements'][self.element_index]['steps'] = self.steps
+            self.steps = []
+            self.element_index = self.element_index + 1
+
     def log_message(self, message):
         """Called when a normal log message are emitted.
 
         The messages are typically logged by keywords, but also the framework
         itself logs some messages. These messages end up to output.xml and
         log.html.
-        """        
+        """
         if message.get('level') == 'FAIL':
             texto_bytes = message.get('message').encode('utf-8')
             texto_base64 = base64.b64encode(texto_bytes)
